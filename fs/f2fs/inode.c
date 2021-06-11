@@ -28,6 +28,14 @@ void f2fs_mark_inode_dirty_sync(struct inode *inode, bool sync)
 	if (is_inode_flag_set(inode, FI_NEW_INODE))
 		return;
 
+	/*
+	 * Conflito resolvido: Ambas as mudanças são importantes.
+	 * A versão HEAD adiciona o incremento da iversion do inode.
+	 * A outra branch adiciona uma verificação para sistemas de arquivos somente leitura.
+	 * Ambas as lógicas devem ser mantidas.
+	 */
+	if (f2fs_readonly(F2FS_I_SB(inode)->sb))
+		return;
 	inode_inc_iversion(inode);
 
 	if (f2fs_inode_dirtied(inode, sync))
