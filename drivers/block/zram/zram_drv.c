@@ -3446,53 +3446,8 @@ static void zram_reset_device(struct zram *zram)
 static ssize_t disksize_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t len)
 {
-	u64 disksize;
-	struct zcomp *comp;
-	struct zram *zram = dev_to_zram(dev);
-	int err;
-
-	disksize = memparse(buf, NULL);
-	if (!disksize)
-		return -EINVAL;
-
-	down_write(&zram->init_lock);
-	if (init_done(zram)) {
-		pr_info("Cannot change disksize for initialized device\n");
-		err = -EBUSY;
-		goto out_unlock;
-	}
-
-	disksize = PAGE_ALIGN(disksize);
-	if (!zram_meta_alloc(zram, disksize)) {
-		err = -ENOMEM;
-		goto out_unlock;
-	}
-
-	comp = zcomp_create(zram->compressor);
-	if (IS_ERR(comp)) {
-		pr_err("Cannot initialise %s compressing backend\n",
-				zram->compressor);
-		err = PTR_ERR(comp);
-		goto out_free_meta;
-	}
-
-	if (!strncmp(zram->compressor, "lzo-rle", 7))
-		is_lzorle = true;
-
-	zram->comp = comp;
-	zram->disksize = disksize;
-	set_capacity(zram->disk, zram->disksize >> SECTOR_SHIFT);
-
-	revalidate_disk_size(zram->disk, true);
-	up_write(&zram->init_lock);
-
-	return len;
-
-out_free_meta:
-	zram_meta_free(zram, disksize);
-out_unlock:
-	up_write(&zram->init_lock);
-	return err;
+	pr_warn("ZRAM: write blocked: size is hardcoded in kernel\n");
+	return -EPERM; 
 }
 
 static ssize_t reset_store(struct device *dev,
@@ -3718,8 +3673,29 @@ static int zram_add(void)
 	zram->disk->private_data = zram;
 	snprintf(zram->disk->disk_name, 16, "zram%d", device_id);
 
-	/* Actual capacity set using syfs (/sys/block/zram<id>/disksize */
-	set_capacity(zram->disk, 0);
+	/* Set default 10GB zram size */
+	zram->disksize = 10ULL * 1024 * 1024 * 1024;
+	
+	/* Set compressor name */
+	strlcpy(zram->compressor, default_compressor, sizeof(zram->compressor));
+	
+	/* Allocate zram metadata */
+	if (!zram_meta_alloc(zram, zram->disksize)) {
+	pr_err("ZRAM: failed to allocate metadata for 10GB\n");
+	ret = -ENOMEM;
+	goto out_cleanup_disk;
+	}
+	
+	/* Create compressor */
+	zram->comp = zcomp_create(zram->compressor);
+	if (IS_ERR(zram->comp)) {
+	pr_err("ZRAM: failed to init compressor: %s\n", zram->compressor);
+	ret = PTR_ERR(zram->comp);
+	goto out_free_meta;
+	}
+	
+	set_capacity(zram->disk, zram->disksize >> SECTOR_SHIFT);
+	
 	/* zram devices sort of resembles non-rotational disks */
 	blk_queue_flag_set(QUEUE_FLAG_NONROT, zram->disk->queue);
 	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, zram->disk->queue);
@@ -3751,14 +3727,16 @@ static int zram_add(void)
 	blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, zram->disk->queue);
 	device_add_disk(NULL, zram->disk, zram_disk_attr_groups);
 
-	strlcpy(zram->compressor, default_compressor, sizeof(zram->compressor));
-
 	zram_debugfs_register(zram);
 	pr_info("Added device: %s\n", zram->disk->disk_name);
 	register_trace_android_vh_show_mem(zram_show_mem, zram);
 	register_trace_android_vh_meminfo_proc_show(zram_meminfo, zram);
 	return device_id;
-
+	
+out_free_meta:
+	zram_meta_free(zram, zram->disksize);
+out_cleanup_disk:
+	put_disk(zram->disk);
 out_free_queue:
 	blk_cleanup_queue(queue);
 out_free_idr:
