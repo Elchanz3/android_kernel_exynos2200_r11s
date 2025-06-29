@@ -1,0 +1,193 @@
+#!/bin/bash
+
+set -e  # Exit on error
+
+# Variables
+export MENU_VERSION="-Jollyk OneUI 7.0"
+export DIR="$(readlink -f .)"
+export OUT_DIR="$DIR/out"
+export PARENT_DIR="$(readlink -f "$DIR/..")"
+export RDIR="$(pwd)"
+export MGB="$RDIR"/magiskboot
+
+export CROSS_COMPILE="$RDIR/toolchain/gcc/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-"
+export CC="$RDIR/toolchain/clang-r416183d/bin/clang"
+
+export PLATFORM_VERSION=15
+export ANDROID_MAJOR_VERSION=v
+export TARGET_SOC=s5e9925
+export LLVM=1 LLVM_IAS=1
+export ARCH=arm64
+export KERNEL_MAKE_ENV="LOCALVERSION=-v1.0"
+export KBUILD_BUILD_USER="Chanz22"
+
+export PATH="$RDIR/clang-r416183d/bin:$PARENT_DIR/build-tools/path/linux-x86:$PARENT_DIR/gas/linux-x86:$PATH"
+
+# Colors
+BOLD_RED=$(tput bold; tput setaf 1)
+BOLD_BLUE=$(tput bold; tput setaf 4)
+BOLD_GREEN=$(tput bold; tput setaf 2)
+UNDERLINE=$(tput smul)
+RESET=$(tput sgr0)
+
+# Functions
+pause() {
+  read -rp "${BOLD_RED}$2${RESET}Press ${BOLD_BLUE}[Enter]${RESET} to $1..."
+}
+
+check_and_clone() {
+  local repo_url="$1"
+  local dest_dir="$2"
+  local description="$3"
+
+  if [ ! -d "$dest_dir" ]; then
+    pause "clone $description"
+    git clone "$repo_url" "$dest_dir"
+  fi
+}
+
+variant() {
+  local configs
+  configs=($(ls arch/arm64/configs/exynos2200_r11s_defconfig* 2>/dev/null))
+
+  if [ ${#configs[@]} -eq 0 ]; then
+    pause "return to main menu" "No variants found! "
+    return
+  fi
+
+  echo ""
+  echo "${BOLD_BLUE}Variant Selection:${RESET}"
+  for i in "${!configs[@]}"; do
+    echo " $((i + 1)). $(basename "${configs[i]}" | cut -d'_' -f2)"
+  done
+
+  local choice
+  read -rp "Enter choice [1 - ${#configs[@]}]: " choice
+  if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice > 0 && choice <= ${#configs[@]} )); then
+    VARIANT="$(basename "${configs[choice - 1]}" | cut -d'_' -f2)"
+    echo "Variant ${VARIANT} selected"
+    pause "continue"
+  else
+    pause "return to main menu" "Invalid option, "
+  fi
+}
+
+clean() {
+  echo "${BOLD_GREEN}***** Cleaning directories *****${RESET}"
+  make clean && make mrproper
+  rm -rf "$OUT_DIR"
+  echo "${BOLD_GREEN}***** Cleaning complete *****${RESET}"
+  pause "continue"
+}
+
+build_kernel() {
+  variant
+  echo "${BOLD_GREEN}***** Compiling kernel *****${RESET}"
+  mkdir -p "$OUT_DIR"
+
+  make -j12 -C "$(pwd)" $KERNEL_MAKE_ENV "exynos2200_${VARIANT}_defconfig" "JollyKernel.config" dtbs
+  make -j12 -C "$(pwd)" $KERNEL_MAKE_ENV
+
+  # Generate dtbo and dtb
+  ./toolchain/mkdtimg cfg_create out/dtbo.img dtconfigs/r11s.cfg -d arch/arm64/boot/dts/samsung/r11s
+  ./toolchain/mkdtimg cfg_create out/dtb.img dtconfigs/exynos2200.cfg -d arch/arm64/boot/dts/exynos
+
+  if [ -e "$DIR/arch/arm64/boot/Image.gz" ]; then
+    cp "$DIR/arch/arm64/boot/Image.gz" "$OUT_DIR/Image.gz"
+  fi
+
+  if [ -e "$DIR/arch/arm64/boot/Image" ]; then
+    cp "$DIR/arch/arm64/boot/Image" "$OUT_DIR/Image"
+    echo "${BOLD_GREEN}***** Ready to flash! *****${RESET}"
+    pause "continue"
+  else
+    pause "return to main menu" "Kernel build failed!"
+  fi
+}
+
+anykernel3() {
+  variant
+  if [ -e "$DIR/arch/arm64/boot/Image" ]; then
+    cd AnyKernel3 || exit
+    cp "$DIR/arch/arm64/boot/Image" Image
+    cp "$DIR/out/dtbo.img" dtbo
+    cp "$DIR/out/dtb.img" dtb
+    zip -r9 "${VARIANT}_kernel_$(cat "$DIR/include/config/kernel.release")_$(date '+%Y_%m_%d').zip" * -x .git README.md *placeholder
+    cd "$DIR" || exit
+    pause "continue"
+  else
+    pause "return to main menu" "Build the kernel first! "
+  fi
+}
+
+build_vendor_boot() {
+  if [ -e "$MGB/images/vendor_boot/vendor_boot.img" ]; then
+    cd "$MGB" || exit
+    cp "$MGB/images/vendor_boot/vendor_boot.img" vendor_boot.img
+    ./magiskboot unpack vendor_boot.img
+    rm -rf dtb
+    cp "$DIR/out/dtb.img" dtb
+    ./magiskboot repack vendor_boot.img
+    mv "$MGB/magiskboot/new-boot.img" "$OUT_DIR/vendor_boot-$(date '+%Y_%m_%d').img"
+    echo "vendor_boot done!"
+    ./magiskboot cleanup
+    cd "$DIR" || exit
+    read -p "Press enter to continue..."
+  else
+    read -p "Error!" "the vendor_boot was not found in the specified path! Press enter to continue..."
+  fi
+}
+
+build_boot_image() {
+  if [ -e "$MGB/images/boot/boot.img" ]; then
+    cd "$MGB" || exit
+    cp "$MGB/images/boot/boot.img" boot.img
+    ./magiskboot unpack boot.img
+    rm -rf kernel
+    cp "$DIR/arch/arm64/boot/Image" kernel
+    ./magiskboot repack boot.img
+    mv "$MGB/magiskboot/new-boot.img" "$OUT_DIR/Jelly_boot-$(date '+%Y_%m_%d').img"
+    echo "boot image done!"
+    ./magiskboot cleanup
+    cd "$DIR" || exit
+    read -p "Press enter to continue..."
+  else
+    read -p "Error!" "the boot image was not found in the specified path! Press enter to continue..."
+  fi
+}
+
+# Run dependency checks
+check_and_clone "https://android.googlesource.com/platform/prebuilts/gas/linux-x86" "$PARENT_DIR/gas/linux-x86" "GNU assembler"
+check_and_clone "https://android.googlesource.com/platform/prebuilts/build-tools" "$PARENT_DIR/build-tools" "Build tools"
+
+# Menu
+show_menus() {
+  clear
+  echo "${BOLD_BLUE} S23FE Kernel builder V2.0 $MENU_VERSION${RESET}"
+  echo " 1. ${UNDERLINE}Build${RESET} Kernel"
+  echo " 2. ${UNDERLINE}Clean${RESET} directories"
+  echo " 3. Create ${UNDERLINE}Flashable ZIP${RESET}"
+  echo " 4. Generate ${UNDERLINE}vendor_boot image${RESET}"
+  echo " 5. Generate ${UNDERLINE}boot image${RESET}"
+  echo " 6. ${UNDERLINE}Exit${RESET}"
+}
+
+read_options() {
+  local choice
+  read -rp "Enter choice [1-6]: " choice
+  case $choice in
+    1) build_kernel ;;
+    2) clean ;;
+    3) anykernel3 ;;
+    4) build_vendor_boot ;;
+	5) build_boot_image ;;
+    6) exit 0 ;;
+    *) pause "return to menu" "Invalid option! " ;;
+  esac
+}
+
+while true; do
+  show_menus
+  read_options
+done
+
