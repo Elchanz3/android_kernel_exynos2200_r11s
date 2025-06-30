@@ -21,6 +21,9 @@ export ARCH=arm64
 export KERNEL_MAKE_ENV="LOCALVERSION=-v1.0"
 export KBUILD_BUILD_USER="Chanz22"
 
+# update git submodules
+git submodule init && git submodule update
+
 export PATH="$RDIR/clang-r416183d/bin:$PARENT_DIR/build-tools/path/linux-x86:$PARENT_DIR/gas/linux-x86:$PATH"
 
 # Colors
