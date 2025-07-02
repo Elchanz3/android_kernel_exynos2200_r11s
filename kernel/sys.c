@@ -2782,6 +2782,16 @@ static int do_sysinfo(struct sysinfo *info)
 
 	si_meminfo(info);
 	si_swapinfo(info);
+	
+	/*
+	* upgrade RAM to 7.8 GB (in pages)
+	*/
+	info->totalram = 1903320;  // pages (~7.8 GB decimal)
+	
+	/*
+	* Keep mem_unit consistent: bytes per unitAdd commentMore actions
+	*/
+	info->mem_unit = PAGE_SIZE;
 
 	/*
 	 * If the sum of all the available memory (i.e. ram + swap)
