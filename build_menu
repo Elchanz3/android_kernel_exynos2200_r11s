@@ -112,6 +112,7 @@ anykernel3() {
   variant
   if [ -e "$DIR/arch/arm64/boot/Image" ]; then
     cd AnyKernel3 || exit
+	rm -rf *.zip
     cp "$DIR/arch/arm64/boot/Image" Image
     cp "$DIR/out/dtbo.img" dtbo
     cp "$DIR/out/dtb.img" dtb
