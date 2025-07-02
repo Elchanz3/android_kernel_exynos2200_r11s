@@ -2789,7 +2789,7 @@ static int do_sysinfo(struct sysinfo *info)
 	info->totalram = 1903320;  // pages (~7.8 GB decimal)
 	
 	/*
-	* Keep mem_unit consistent: bytes per unitAdd commentMore actions
+	* Keep mem_unit consistent: bytes per unit
 	*/
 	info->mem_unit = PAGE_SIZE;
 
