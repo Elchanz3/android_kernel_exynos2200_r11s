@@ -10,8 +10,8 @@ export PARENT_DIR="$(readlink -f "$DIR/..")"
 export RDIR="$(pwd)"
 export MGB="$RDIR"/magiskboot
 
-export CROSS_COMPILE="$RDIR/toolchain/gcc/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-"
-export CC="$RDIR/toolchain/clang-r416183d/bin/clang"
+export CROSS_COMPILE="$PARENT_DIR/clang-r416183b/bin/aarch64-linux-gnu-"
+export CC="$PARENT_DIR/clang-r416183b/bin/clang"
 
 export PLATFORM_VERSION=15
 export ANDROID_MAJOR_VERSION=v
@@ -24,7 +24,7 @@ export KBUILD_BUILD_USER="Chanz22"
 # update git submodules
 git submodule init && git submodule update
 
-export PATH="$RDIR/clang-r416183d/bin:$PARENT_DIR/build-tools/path/linux-x86:$PARENT_DIR/gas/linux-x86:$PATH"
+export PATH="$PARENT_DIR/clang-r416183b/bin:$PARENT_DIR/build-tools/path/linux-x86:$PARENT_DIR/gas/linux-x86:$PATH"
 
 # Colors
 BOLD_RED=$(tput bold; tput setaf 1)
@@ -131,7 +131,7 @@ build_vendor_boot() {
     rm -rf dtb
     cp "$DIR/out/dtb.img" dtb
     ./magiskboot repack vendor_boot.img
-    mv "$MGB/magiskboot/new-boot.img" "$OUT_DIR/vendor_boot-$(date '+%Y_%m_%d').img"
+    mv "$MGB/new-boot.img" "$OUT_DIR/vendor_boot-$(date '+%Y_%m_%d').img"
     echo "vendor_boot done!"
     ./magiskboot cleanup
     cd "$DIR" || exit
@@ -149,7 +149,7 @@ build_boot_image() {
     rm -rf kernel
     cp "$DIR/arch/arm64/boot/Image" kernel
     ./magiskboot repack boot.img
-    mv "$MGB/magiskboot/new-boot.img" "$OUT_DIR/Jelly_boot-$(date '+%Y_%m_%d').img"
+    mv "$MGB/new-boot.img" "$OUT_DIR/Jelly_boot-$(date '+%Y_%m_%d').img"
     echo "boot image done!"
     ./magiskboot cleanup
     cd "$DIR" || exit
@@ -160,6 +160,7 @@ build_boot_image() {
 }
 
 # Run dependency checks
+check_and_clone "https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b" "$PARENT_DIR/clang-r416183b" "Android Clang/LLVM"
 check_and_clone "https://android.googlesource.com/platform/prebuilts/gas/linux-x86" "$PARENT_DIR/gas/linux-x86" "GNU assembler"
 check_and_clone "https://android.googlesource.com/platform/prebuilts/build-tools" "$PARENT_DIR/build-tools" "Build tools"
 
