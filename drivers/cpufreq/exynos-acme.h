@@ -70,6 +70,9 @@ struct exynos_cpufreq_domain {
 	struct freq_qos_request		max_qos_req;
 	struct freq_qos_request		user_min_qos_req;
 	struct freq_qos_request		user_max_qos_req;
+	
+	unsigned int			user_default_qos;
+	
 	struct delayed_work		work;
 
 	/* fops node */
