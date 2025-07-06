@@ -23,6 +23,55 @@
 
 #include "sgpu_profiler_v1.h"
 
+static bool undervolt_enabled = false;
+static long undervolt_value_mv = 35; // Default undervolt value in mV
+
+static ssize_t undervolt_enable_show(struct device *dev,
+					struct device_attribute *attr, char *buf)
+{
+	return scnprintf(buf, PAGE_SIZE, "%d\n", undervolt_enabled);
+}
+
+static ssize_t undervolt_enable_store(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	int value;
+
+	if (sscanf(buf, "%d", &value) != 1)
+		return -EINVAL;
+
+	undervolt_enabled = (value != 0);
+
+	return count;
+}
+static DEVICE_ATTR_RW(undervolt_enable);
+
+static ssize_t undervolt_value_show(struct device *dev,
+					struct device_attribute *attr, char *buf)
+{
+	return scnprintf(buf, PAGE_SIZE, "%ld\n", undervolt_value_mv);
+}
+
+static ssize_t undervolt_value_store(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	long value;
+
+	if (sscanf(buf, "%ld", &value) != 1)
+		return -EINVAL;
+
+	if (value < 0 || value > 100) { // Example range, adjust as needed
+		dev_warn(dev, "undervolt_value_mv range: (0 ~ 100)\n");
+		return -EINVAL;
+	}
+
+	undervolt_value_mv = value;
+
+	return count;
+}
+static DEVICE_ATTR_RW(undervolt_value);
 
 static ssize_t dvfs_table_show(struct device *dev,
 				      struct device_attribute *attr, char *buf)
@@ -45,6 +94,18 @@ static ssize_t dvfs_table_show(struct device *dev,
 		}
 		volt = dev_pm_opp_get_voltage(target_opp);
 		dev_pm_opp_put(target_opp);
+
+		if (undervolt_enabled) {
+			// Convert microvolts to millivolts, subtract, then convert back
+			long current_volt_mv = volt / 1000;
+			long undervolted_volt_mv = current_volt_mv - undervolt_value_mv;
+			// Ensure voltage doesn't go below a safe minimum (e.g., 500mV)
+			if (undervolted_volt_mv < 500) {
+				undervolted_volt_mv = 500;
+			}
+			volt = undervolted_volt_mv * 1000;
+		}
+
 		count += scnprintf(&buf[count], PAGE_SIZE - count,
 				   "%10lu %7lu %3u %3u %7u\n",
 				   freq, volt,
@@ -736,7 +797,7 @@ static ssize_t egp_profile_show(struct device *dev,
 			ktime_t avg_v2f = dst->sum_v2f / dst->nrq;
 
 			count += scnprintf(buf + count, PAGE_SIZE - count
-				, "%4d, %6llu, %3u, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6d, %d, %7d,%7d, %7d,%7d\n"
+				, "%4d, %6llu, %3u, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6lu,%6lu, %6d, %d, %7d,%7d, %7d,%7d\n"
 				, id++
 				, dst->vsync_interval
 				, dst->nrq
@@ -865,6 +926,8 @@ static struct attribute *sgpu_devfreq_sysfs_entries[] = {
 	&dev_attr_compute_weight.attr,
 	&dev_attr_local_minlock_util.attr,
 	&dev_attr_local_minlock_temp.attr,
+	&dev_attr_undervolt_enable.attr,
+	&dev_attr_undervolt_value.attr,
 	NULL,
 };
 
@@ -904,3 +967,5 @@ int sgpu_create_sysfs_file(struct devfreq *df)
 
 	return ret;
 }
+
+
