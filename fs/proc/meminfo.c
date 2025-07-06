@@ -74,9 +74,6 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
 	hugepage_pool_pages = total_hugepage_pool_pages();
 #endif
 
-    /* upgrade memory to 7.8Gb */
-	i.totalram = 1903320;  // pages (~7.8 GB decimal)
-
 	show_val_kb(m, "MemTotal:       ", i.totalram);
 #ifdef CONFIG_RBIN
 	show_val_kb(m, "MemFree:        ", i.freeram + stats[RBIN_FREE] + hugepage_pool_pages);
