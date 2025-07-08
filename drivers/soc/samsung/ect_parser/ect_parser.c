@@ -854,12 +854,235 @@ err_domain_list_allocation:
 	return ret;
 }
 
+#define GLOBAL_MHZ 3172
+#define sgpu_MHZ 303
+
+/*Underclocking little cores to 351 MHz*/
+unsigned long arg_cpu_min_c0 __ro_after_init = 108000; 
+
+static int __init cpufreq_read_cpu_min_c1(char *cpu_min_c1) /*integer remains in memory after function call*/
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_min_c1, 0, &ui_khz); /*convert cpu_min_c1 string to unsigned long variable ui_khz*/
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_min_c0 = ui_khz;
+	printk("cpu_min_c1=%lu\n", arg_cpu_min_c0); 
+	return ret;
+}
+__setup("cpu_min_c1=", cpufreq_read_cpu_min_c1);
+
+/*Underclocking perf cores to 231 MHz*/
+unsigned long arg_cpu_min_c1 __ro_after_init = 231000; 
+
+static __init int cpufreq_read_cpu_min_c2(char *cpu_min_c2)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_min_c2, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_min_c1 = ui_khz;
+	printk("cpu_min_c2=%lu\n", arg_cpu_min_c1);
+	return ret;
+}
+__setup("cpu_min_c2=", cpufreq_read_cpu_min_c2);
+
+/*Underclocking prime cores to 255 MHz*/
+unsigned long arg_cpu_min_c2 __ro_after_init = 255000; 
+
+static __init int cpufreq_read_cpu_min_c3(char *cpu_min_c3)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_min_c3, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_min_c2 = ui_khz;
+	printk("cpu_min_c3=%lu\n", arg_cpu_min_c2);
+	return ret;
+}
+__setup("cpu_min_c3=", cpufreq_read_cpu_min_c3);
+
+unsigned long arg_sgpu_min __ro_after_init = 133000;
+
+static __init int cpufreq_read_sgpu_min(char *sgpu_min)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(sgpu_min, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_sgpu_min = ui_khz;
+	printk("sgpu_min=%lu\n", arg_sgpu_min);
+	return ret;
+}
+__setup("sgpu_min=", cpufreq_read_sgpu_min);
+
+unsigned long arg_mif_min __ro_after_init = 421000;
+
+static __init int cpufreq_read_mif_min(char *mif_min)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(mif_min, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_mif_min = ui_khz;
+	printk("mif_min=%lu\n", arg_mif_min);
+	return ret;
+}
+__setup("mif_min=", cpufreq_read_mif_min);
+
+
+/*Overclocking little cores to 2106 MHz*/
+unsigned long arg_cpu_max_c1 __ro_after_init = 2106000;
+
+static int __init cpufreq_read_cpu_max_c1(char *cpu_max_c1) /*integer remains in memory after function call*/
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_max_c1, 0, &ui_khz); /*convert cpu_max_c1 string to unsigned long variable ui_khz*/
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_max_c1 = ui_khz;
+	printk("cpu_max_c1=%lu\n", arg_cpu_max_c1); 
+	return ret;
+}
+__setup("cpu_max_c1=", cpufreq_read_cpu_max_c1);
+
+/*Overclocking perf cores to 2672 MHz*/
+unsigned long arg_cpu_max_c2 __ro_after_init = 2672000;
+
+static __init int cpufreq_read_cpu_max_c2(char *cpu_max_c2)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_max_c2, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_max_c2 = ui_khz;
+	printk("cpu_max_c2=%lu\n", arg_cpu_max_c2);
+	return ret;
+}
+__setup("cpu_max_c2=", cpufreq_read_cpu_max_c2);
+
+/*Overclocking prime cores to 2968 MHz*/
+unsigned long arg_cpu_max_c3 __ro_after_init = 2968000;
+
+static __init int cpufreq_read_cpu_max_c3(char *cpu_max_c3)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_max_c3, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_max_c3 = ui_khz;
+	printk("cpu_max_c3=%lu\n", arg_cpu_max_c3);
+	return ret;
+}
+__setup("cpu_max_c3=", cpufreq_read_cpu_max_c3);
+
+unsigned long arg_sgpu_max __ro_after_init = 1600000;
+
+static __init int cpufreq_read_sgpu_max(char *sgpu_max)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(sgpu_max, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_sgpu_max = ui_khz;
+	printk("sgpu_max=%lu\n", arg_sgpu_max);
+	return ret;
+}
+__setup("sgpu_max=", cpufreq_read_sgpu_max);
+
+unsigned long arg_mif_max __ro_after_init = 3332000;
+
+static __init int cpufreq_read_mif_max(char *mif_max)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(mif_max, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_mif_max = ui_khz;
+	printk("mif_max=%lu\n", arg_mif_max);
+	return ret;
+}
+__setup("mif_max=", cpufreq_read_mif_max);
+
 static int ect_parse_gen_param_table(int parser_version, void *address, struct ect_gen_param_table *size)
 {
+	int i;
+	
 	ect_parse_integer(&address, &size->num_of_col);
 	ect_parse_integer(&address, &size->num_of_row);
 
 	size->parameter = address;
+	
+	for (i = 0; i < size->num_of_row; ++i) {
+		int max_clock;
+
+		if (ect_strcmp(size->table_name, "MINMAX_dvfs_cpucl0") == 0) {
+			max_clock = 2106000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MIN_FREQ] = 108000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MAX_FREQ] = 2106000 / 1000;
+			if (GLOBAL_MHZ < max_clock)
+				max_clock = GLOBAL_MHZ;
+			size->parameter[i * size->num_of_col + MINMAX_BOOT_FREQ] = max_clock;
+		} else if (ect_strcmp(size->table_name, "MINMAX_dvfs_cpucl1") == 0) {
+			max_clock = 2672000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MIN_FREQ] = 231000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MAX_FREQ] = 2672000 / 1000;  
+			if (GLOBAL_MHZ < max_clock)
+				max_clock = GLOBAL_MHZ;
+			size->parameter[i * size->num_of_col + MINMAX_BOOT_FREQ] = max_clock;
+		} else if (ect_strcmp(size->table_name, "MINMAX_dvfs_cpucl2") == 0) {
+			max_clock = 2968000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MIN_FREQ] = 255000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MAX_FREQ] = 2968000 / 1000;
+			if (GLOBAL_MHZ < max_clock)
+				max_clock = GLOBAL_MHZ;
+			size->parameter[i * size->num_of_col + MINMAX_BOOT_FREQ] = max_clock;
+		} else if (ect_strcmp(size->table_name, "MINMAX_dvfs_mif") == 0) {
+			max_clock = 3332000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MIN_FREQ] = 421000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MAX_FREQ] = 3332000 / 1000;
+			if (GLOBAL_MHZ < max_clock)
+				max_clock = GLOBAL_MHZ;
+			size->parameter[i * size->num_of_col + MINMAX_BOOT_FREQ] = max_clock;
+		} else if (ect_strcmp(size->table_name, "MINMAX_dvfs_sgpu") == 0) {
+			max_clock = 1600000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MIN_FREQ] = 133000 / 1000;
+			size->parameter[i * size->num_of_col + MINMAX_MAX_FREQ] = 1600000 / 1000;
+			if (sgpu_MHZ < max_clock)
+				max_clock = sgpu_MHZ;
+			size->parameter[i * size->num_of_col + MINMAX_BOOT_FREQ] = max_clock;
+		}
+	}
 
 	return 0;
 }

@@ -177,7 +177,7 @@ static struct exynos_pm_qos_object bus_throughput_max_pm_qos = {
 static BLOCKING_NOTIFIER_HEAD(cluster2_freq_min_notifier);
 static struct exynos_pm_qos_constraints cluster2_freq_min_constraints = {
 	.list = PLIST_HEAD_INIT(cluster2_freq_min_constraints.list),
-	.target_value = PM_QOS_CLUSTER2_FREQ_MIN_DEFAULT_VALUE,
+	.target_value = PM_QOS_CLUSTER2_FREQ_MIN_VALUE,
 	.default_value = PM_QOS_CLUSTER2_FREQ_MIN_DEFAULT_VALUE,
 	.type = EXYNOS_PM_QOS_MAX,
 	.notifiers = &cluster2_freq_min_notifier,
@@ -192,7 +192,7 @@ static struct exynos_pm_qos_object cluster2_freq_min_pm_qos = {
 static BLOCKING_NOTIFIER_HEAD(cluster2_freq_max_notifier);
 static struct exynos_pm_qos_constraints cluster2_freq_max_constraints = {
 	.list = PLIST_HEAD_INIT(cluster2_freq_max_constraints.list),
-	.target_value = PM_QOS_CLUSTER2_FREQ_MAX_DEFAULT_VALUE,
+	.target_value = PM_QOS_CLUSTER2_FREQ_MAX_VALUE,
 	.default_value = PM_QOS_CLUSTER2_FREQ_MAX_DEFAULT_VALUE,
 	.type = EXYNOS_PM_QOS_MIN,
 	.notifiers = &cluster2_freq_max_notifier,
@@ -207,7 +207,7 @@ static struct exynos_pm_qos_object cluster2_freq_max_pm_qos = {
 static BLOCKING_NOTIFIER_HEAD(cluster1_freq_min_notifier);
 static struct exynos_pm_qos_constraints cluster1_freq_min_constraints = {
 	.list = PLIST_HEAD_INIT(cluster1_freq_min_constraints.list),
-	.target_value = PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE,
+	.target_value = PM_QOS_CLUSTER1_FREQ_MIN_VALUE,
 	.default_value = PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE,
 	.type = EXYNOS_PM_QOS_MAX,
 	.notifiers = &cluster1_freq_min_notifier,
@@ -222,7 +222,7 @@ static struct exynos_pm_qos_object cluster1_freq_min_pm_qos = {
 static BLOCKING_NOTIFIER_HEAD(cluster1_freq_max_notifier);
 static struct exynos_pm_qos_constraints cluster1_freq_max_constraints = {
 	.list = PLIST_HEAD_INIT(cluster1_freq_max_constraints.list),
-	.target_value = PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE,
+	.target_value = PM_QOS_CLUSTER1_FREQ_MAX_VALUE,
 	.default_value = PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE,
 	.type = EXYNOS_PM_QOS_MIN,
 	.notifiers = &cluster1_freq_max_notifier,
@@ -237,7 +237,7 @@ static struct exynos_pm_qos_object cluster1_freq_max_pm_qos = {
 static BLOCKING_NOTIFIER_HEAD(cluster0_freq_min_notifier);
 static struct exynos_pm_qos_constraints cluster0_freq_min_constraints = {
 	.list = PLIST_HEAD_INIT(cluster0_freq_min_constraints.list),
-	.target_value = PM_QOS_CLUSTER0_FREQ_MIN_DEFAULT_VALUE,
+	.target_value = PM_QOS_CLUSTER0_FREQ_MIN_VALUE,
 	.default_value = PM_QOS_CLUSTER0_FREQ_MIN_DEFAULT_VALUE,
 	.type = EXYNOS_PM_QOS_MAX,
 	.notifiers = &cluster0_freq_min_notifier,
@@ -252,7 +252,7 @@ static struct exynos_pm_qos_object cluster0_freq_min_pm_qos = {
 static BLOCKING_NOTIFIER_HEAD(cluster0_freq_max_notifier);
 static struct exynos_pm_qos_constraints cluster0_freq_max_constraints = {
 	.list = PLIST_HEAD_INIT(cluster0_freq_max_constraints.list),
-	.target_value = PM_QOS_CLUSTER0_FREQ_MAX_DEFAULT_VALUE,
+	.target_value = PM_QOS_CLUSTER0_FREQ_MAX_VALUE,
 	.default_value = PM_QOS_CLUSTER0_FREQ_MAX_DEFAULT_VALUE,
 	.type = EXYNOS_PM_QOS_MIN,
 	.notifiers = &cluster0_freq_max_notifier,

@@ -1136,47 +1136,6 @@ static struct kobj_type ktype_ego = {
 };
 
 /********************** cpufreq governor interface *********************/
-struct cpufreq_governor energy_aware_gov;
-
-static int ego_kthread_create(struct ego_policy *egp)
-{
-	struct task_struct *thread;
-	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
-	struct cpufreq_policy *policy = egp->policy;
-	int ret;
-
-	/* kthread only required for slow path */
-	if (policy->fast_switch_enabled)
-		return 0;
-
-	kthread_init_work(&egp->work, ego_work);
-	kthread_init_worker(&egp->worker);
-	thread = kthread_create(kthread_worker_fn, &egp->worker,
-				"ego:%d", cpumask_first(policy->related_cpus));
-	if (IS_ERR(thread)) {
-		pr_err("failed to create ego thread: %ld\n", PTR_ERR(thread));
-		return PTR_ERR(thread);
-	}
-
-	ret = sched_setscheduler_nocheck(thread, SCHED_FIFO, &param);
-	if (ret) {
-		kthread_stop(thread);
-		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
-		return ret;
-	}
-
-	set_cpus_allowed_ptr(thread, &egp->thread_allowed_cpus);
-	thread->flags |= PF_NO_SETAFFINITY;
-	egp->thread = thread;
-	init_irq_work(&egp->irq_work, ego_irq_work);
-	mutex_init(&egp->work_lock);
-
-	pr_info("%s: cpus=%#x, allowed-cpu=%#x\n", __func__,
-			*(unsigned int *)cpumask_bits(&egp->cpus),
-			*(unsigned int *)cpumask_bits(&egp->thread_allowed_cpus));
-
-	return 0;
-}
 
 static int ego_init(struct cpufreq_policy *policy)
 {
@@ -1202,11 +1161,6 @@ static int ego_init(struct cpufreq_policy *policy)
 	egp->policy = policy;
 
 	ego_init_slack_timer(egp);
-
-	if (ego_kthread_create(egp)) {
-		pr_info("%s: failed to create kthread\n", __func__);
-		goto fail_ego_init;
-	}
 
 complete_ego_init:
 	if (!policy->fast_switch_enabled)
@@ -1305,37 +1259,6 @@ static void ego_limits(struct cpufreq_policy *policy)
 		cpufreq_driver_fast_switch(policy, target_freq);
 }
 
-struct cpufreq_governor energy_aware_gov = {
-	.name			= "energy_aware",
-	.owner			= THIS_MODULE,
-	.flags			= CPUFREQ_GOV_DYNAMIC_SWITCHING,
-	.init			= ego_init,
-	.exit			= ego_exit,
-	.start			= ego_start,
-	.stop			= ego_stop,
-	.limits			= ego_limits,
-};
-
-#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_ENERGYAWARE
-struct cpufreq_governor *cpufreq_default_governor(void)
-{
-	return &energy_aware_gov;
-}
-#endif
-
-static int ego_register(struct kobject *ems_kobj)
-{
-	ego_kobj = kobject_create_and_add("ego", ems_kobj);
-	if (!ego_kobj)
-		return -EINVAL;
-
-	sysbusy_register_notifier(&ego_sysbusy_notifier);
-	cpu_pm_register_notifier(&ego_cpu_pm_notifier);
-	emstune_register_notifier(&ego_mode_update_notifier);
-
-	return cpufreq_register_governor(&energy_aware_gov);
-}
-
 static struct ego_policy *ego_policy_alloc(void)
 {
 	return kzalloc(sizeof(struct ego_policy), GFP_KERNEL);
@@ -1380,8 +1303,6 @@ int ego_pre_init(struct kobject *ems_kobj)
 	dn = of_find_node_by_path("/ems/ego");
 	if (!dn)
 		goto fail;
-
-	ego_register(ems_kobj);
 
 	for_each_child_of_node(dn, child) {
 		struct ego_policy *egp;
