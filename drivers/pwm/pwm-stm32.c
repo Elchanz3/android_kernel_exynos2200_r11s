@@ -452,9 +452,8 @@ static int stm32_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 
 	enabled = pwm->state.enabled;
 
-	if (!state->enabled) {
-		if (enabled)
-			stm32_pwm_disable(priv, pwm->hwpwm);
+	if (enabled && !state->enabled) {
+		stm32_pwm_disable(priv, pwm->hwpwm);
 		return 0;
 	}
 

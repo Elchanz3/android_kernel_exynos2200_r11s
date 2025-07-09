@@ -1124,13 +1124,11 @@ static struct sock *mptcp_subflow_get_send(struct mptcp_sock *msk,
 		send_info[i].ratio = -1;
 	}
 	mptcp_for_each_subflow(msk, subflow) {
-		bool backup = subflow->backup || subflow->request_bkup;
-
 		ssk =  mptcp_subflow_tcp_sock(subflow);
 		if (!mptcp_subflow_active(subflow))
 			continue;
 
-		nr_active += !backup;
+		nr_active += !subflow->backup;
 		*sndbuf = max(tcp_sk(ssk)->snd_wnd, *sndbuf);
 		if (!sk_stream_memory_free(subflow->tcp_sock))
 			continue;
@@ -1141,9 +1139,9 @@ static struct sock *mptcp_subflow_get_send(struct mptcp_sock *msk,
 
 		ratio = div_u64((u64)READ_ONCE(ssk->sk_wmem_queued) << 32,
 				pace);
-		if (ratio < send_info[backup].ratio) {
-			send_info[backup].ssk = ssk;
-			send_info[backup].ratio = ratio;
+		if (ratio < send_info[subflow->backup].ratio) {
+			send_info[subflow->backup].ssk = ssk;
+			send_info[subflow->backup].ratio = ratio;
 		}
 	}
 

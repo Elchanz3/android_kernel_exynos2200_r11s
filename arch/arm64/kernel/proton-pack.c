@@ -569,19 +569,7 @@ static enum mitigation_state spectre_v4_enable_hw_mitigation(void)
 	}
 
 	/* SCTLR_EL1.DSSBS was initialised to 0 during boot */
-	asm volatile(SET_PSTATE_SSBS(0));
-
-	/*
-	 * SSBS is self-synchronizing and is intended to affect subsequent
-	 * speculative instructions, but some CPUs can speculate with a stale
-	 * value of SSBS.
-	 *
-	 * Mitigate this with an unconditional speculation barrier, as CPUs
-	 * could mis-speculate branches and bypass a conditional barrier.
-	 */
-	if (IS_ENABLED(CONFIG_ARM64_ERRATUM_3194386))
-		spec_bar();
-
+	set_pstate_ssbs(0);
 	return SPECTRE_MITIGATED;
 }
 
@@ -630,6 +618,7 @@ void __init smccc_patch_fw_mitigation_conduit(struct alt_instr *alt,
 
 	*updptr = cpu_to_le32(insn);
 }
+
 static enum mitigation_state spectre_v4_enable_fw_mitigation(void)
 {
 	enum mitigation_state state;
