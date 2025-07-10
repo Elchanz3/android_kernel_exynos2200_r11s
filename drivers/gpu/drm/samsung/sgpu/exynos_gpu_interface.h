@@ -1,12 +1,12 @@
 #include <linux/devfreq.h>
 #include <linux/kernel.h>
+#include "sgpu_custom_dvfs.h" // Include custom DVFS header
 
 #ifdef CONFIG_DRM_SGPU_EXYNOS
 
-#include "soc/samsung/cal-if.h"
-#include "soc/samsung/fvmap.h"
+// Removed soc/samsung/cal-if.h and soc/samsung/fvmap.h
 
-#define TABLE_MAX                      (200)
+// Removed TABLE_MAX
 #define SYSBUSY_FREQ_THRESHOLD         (500000)
 #define SYSBUSY_UTIL_THRESHOLD         (70)
 
@@ -18,7 +18,8 @@ int gpu_dvfs_register_utilization_notifier(struct notifier_block *nb);
 int gpu_dvfs_unregister_utilization_notifier(struct notifier_block *nb);
 void gpu_dvfs_notify_utilization(void);
 
-int gpu_dvfs_init_table(struct dvfs_rate_volt *tb, int max_state);
+// Removed struct dvfs_rate_volt *tb from gpu_dvfs_init_table
+int gpu_dvfs_init_table(void);
 int gpu_dvfs_get_step(void);
 int *gpu_dvfs_get_freq_table(void);
 
@@ -65,3 +66,5 @@ int exynos_interface_deinit(struct devfreq *df);
 void gpu_umd_min_clock_set(unsigned int value, unsigned int delay);
 
 #endif
+
+

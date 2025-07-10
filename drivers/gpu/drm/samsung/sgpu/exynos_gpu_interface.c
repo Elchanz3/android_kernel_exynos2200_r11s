@@ -9,6 +9,7 @@
 #include "sgpu_user_interface.h"
 #include "sgpu_utilization.h"
 #include "amdgpu.h"
+#include "sgpu_custom_dvfs.h" // Include custom DVFS header
 
 #ifdef CONFIG_DRM_SGPU_EXYNOS
 
@@ -31,8 +32,7 @@
 #include <trace/hooks/mm.h>
 #include <linux/ems.h>
 
-static struct dev_pm_qos_request	exynos_pm_qos_min;
-static struct dev_pm_qos_request	exynos_pm_qos_max;
+// Removed exynos_pm_qos_min and exynos_pm_qos_max
 
 extern struct amdgpu_device *p_adev;
 static struct blocking_notifier_head utilization_notifier_list;
@@ -62,68 +62,6 @@ static unsigned long gpu_siop_max_clock = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
 static struct delayed_work work_mm_min_clock;
 
 static struct delayed_work work_umd_min_clock;
-
-// static unsigned int rtp_head;
-// static unsigned int rtp_tail;
-
-// static int rtp_readout;
-// static unsigned int rtp_nrq;
-// static unsigned int rtp_lastshowidx;
-// static ktime_t rtp_prev_swaptimestamp;
-// static ktime_t rtp_lasthw_starttime;
-// static ktime_t rtp_lasthw_endtime;
-// static atomic_t rtp_lasthw_totaltime;
-// static atomic_t rtp_lasthw_read;
-// static ktime_t rtp_curhw_starttime;
-// static ktime_t rtp_curhw_endtime;
-// static ktime_t rtp_curhw_totaltime;
-// static ktime_t rtp_sum_pre;
-// static ktime_t rtp_sum_cpu;
-// static ktime_t rtp_sum_v2s;
-// static ktime_t rtp_sum_gpu;
-// static ktime_t rtp_sum_v2f;
-// static ktime_t rtp_max_pre;
-// static ktime_t rtp_max_cpu;
-// static ktime_t rtp_max_v2s;
-// static ktime_t rtp_max_gpu;
-// static ktime_t rtp_max_v2f;
-// static int rtp_last_cputime;
-// static int rtp_last_gputime;
-
-// static ktime_t rtp_vsync_lastsw;
-// static ktime_t rtp_vsync_curhw;
-// static ktime_t rtp_vsync_lasthw;
-// static ktime_t rtp_vsync_prev;
-// static ktime_t rtp_vsync_interval;
-// static atomic_t rtp_vsync_swapcall_counter;
-// static int rtp_vsync_frame_counter;
-// static int rtp_vsync_counter;
-// static unsigned int rtp_target_frametime;
-
-// static atomic_t migov_frame_counter;
-// static atomic_t migov_vsync_counter;
-// static atomic64_t migov_last_updated_vsync_time;
-
-// static unsigned int rtp_targettime_margin;
-// static unsigned int rtp_workload_margin;
-// static unsigned int rtp_decon_time;
-// static int rtp_shortterm_comb_ctrl;
-// static int rtp_shortterm_comb_ctrl_manual;
-
-// // static int rtp_powertable_size[NUM_OF_DOMAIN];
-// static int rtp_busy_cpuid_prev;
-// static int rtp_busy_cpuid;
-// static int rtp_busy_cpuid_next;
-// // static int rtp_cur_freqlv[NUM_OF_DOMAIN];
-// static int rtp_max_minlock_freq;
-// static int rtp_prev_minlock_cpu_freq;
-// static int rtp_prev_minlock_gpu_freq;
-// static int rtp_last_minlock_cpu_maxfreq;
-// static int rtp_last_minlock_gpu_maxfreq;
-
-// static int migov_pid_list_readout;
-// static u16 migov_pid_list[NUM_OF_PID];
-// static int migov_pid_list_top;
 
 static int prev_scen, prev_ways;
 static int exynos_freq_trans_notifier(struct notifier_block *nb,
@@ -336,28 +274,9 @@ err:
 	return ERR_PTR(err);
 }
 
-static int gpu_pm_qos_min_notifier(struct notifier_block *nb,
-			       unsigned long val, void *v)
-{
-	if (!dev_pm_qos_request_active(&exynos_pm_qos_min))
-		return NOTIFY_BAD;
+// Removed gpu_pm_qos_min_notifier
 
-	dev_pm_qos_update_request(&exynos_pm_qos_min,
-				  val / HZ_PER_KHZ);
-
-	return NOTIFY_OK;
-}
-
-static int gpu_pm_qos_max_notifier(struct notifier_block *nb,
-			       unsigned long val, void *v)
-{
-	if (!dev_pm_qos_request_active(&exynos_pm_qos_max))
-		return NOTIFY_BAD;
-	dev_pm_qos_update_request(&exynos_pm_qos_max,
-				  val / HZ_PER_KHZ);
-
-	return NOTIFY_OK;
-}
+// Removed gpu_pm_qos_max_notifier
 
 static int exynos_sysbusy_notifier_call(struct notifier_block *nb,
 					unsigned long val, void *v)
@@ -392,15 +311,7 @@ static int exynos_sysbusy_notifier_call(struct notifier_block *nb,
 		return NOTIFY_OK;
 }
 
-static struct notifier_block gpu_min_qos_notifier = {
-	.notifier_call = gpu_pm_qos_min_notifier,
-	.priority = INT_MAX,
-};
-
-static struct notifier_block gpu_max_qos_notifier = {
-	.notifier_call = gpu_pm_qos_max_notifier,
-	.priority = INT_MAX,
-};
+// Removed gpu_min_qos_notifier and gpu_max_qos_notifier static declarations
 
 static struct notifier_block exynos_sysbusy_notifier = {
 	.notifier_call = exynos_sysbusy_notifier_call,
@@ -1037,12 +948,12 @@ static struct kobj_attribute attr_gpu_ifpo_runtime_control = __ATTR_RW(gpu_ifpo_
 
 static void gpu_mem_show(void *data, unsigned int filter, nodemask_t *nodemask)
 {
+	struct drm_device *ddev = &p_adev->ddev;
 	struct drm_file *file = NULL;
 	struct amdgpu_fpriv *afpriv = NULL;
 	size_t total_num_pages = 0, num_pages;
 	int r = 0;
-	struct drm_device *ddev = &p_adev->ddev;
-
+	
 	if (!ddev)
 		return;
 
@@ -1137,17 +1048,6 @@ void exynos_add_pmqos_cpu_stc(void)
 	}
 }
 
-// void exynos_reset_pmqos_cpu_stc(void)
-// {
-// 	rtp_prev_minlock_cpu_freq = -1;
-// 	if (cpufreq_pm_qos_added > 0) {
-// 		if (freq_qos_request_active(&cl1_min_pm_qos))
-// 			freq_qos_update_request(&cl1_min_pm_qos, 0);
-// 		if (freq_qos_request_active(&cl2_min_pm_qos))
-// 			freq_qos_update_request(&cl2_min_pm_qos, 0);
-// 	}
-// }
-
 int exynos_interface_init(struct devfreq *df)
 {
 	const char *tmp_str;
@@ -1196,16 +1096,7 @@ int exynos_interface_init(struct devfreq *df)
 				       &freq_trans_notifier,
 				       DEVFREQ_TRANSITION_NOTIFIER);
 
-	dev_pm_qos_add_request(df->dev.parent, &exynos_pm_qos_min,
-			       DEV_PM_QOS_MIN_FREQUENCY,
-			       df->scaling_min_freq / HZ_PER_KHZ);
-	dev_pm_qos_add_request(df->dev.parent, &exynos_pm_qos_max,
-			       DEV_PM_QOS_MAX_FREQUENCY,
-			       df->scaling_max_freq / HZ_PER_KHZ);
-	exynos_pm_qos_add_notifier(PM_QOS_GPU_THROUGHPUT_MAX,
-				   &gpu_max_qos_notifier);
-	exynos_pm_qos_add_notifier(PM_QOS_GPU_THROUGHPUT_MIN,
-				   &gpu_min_qos_notifier);
+	// Removed dev_pm_qos_add_request for exynos_pm_qos_min and exynos_pm_qos_max
 	exynos_pm_qos_add_request(&exynos_mm_gpu_min_qos,
 				  PM_QOS_GPU_THROUGHPUT_MIN, 0);
 	exynos_pm_qos_add_request(&exynos_tmu_gpu_max_qos,
@@ -1250,12 +1141,8 @@ int exynos_interface_deinit(struct devfreq *df)
 	exynos_pm_qos_remove_request(&exynos_ski_gpu_min_qos);
 	exynos_pm_qos_remove_request(&exynos_ski_gpu_max_qos);
 	exynos_pm_qos_remove_request(&exynos_gpu_siop_max_qos);
-	exynos_pm_qos_remove_notifier(PM_QOS_GPU_THROUGHPUT_MAX,
-				      &gpu_max_qos_notifier);
-	exynos_pm_qos_remove_notifier(PM_QOS_GPU_THROUGHPUT_MIN,
-				      &gpu_min_qos_notifier);
-	dev_pm_qos_remove_request(&exynos_pm_qos_min);
-	dev_pm_qos_remove_request(&exynos_pm_qos_max);
+	// Removed exynos_pm_qos_remove_notifier for gpu_max_qos_notifier and gpu_min_qos_notifier
+	// Removed dev_pm_qos_remove_request for exynos_pm_qos_min and exynos_pm_qos_max
 	devm_devfreq_unregister_notifier(df->dev.parent, df,
 					 &freq_trans_notifier,
 					 DEVFREQ_TRANSITION_NOTIFIER);
@@ -1305,18 +1192,11 @@ EXPORT_SYMBOL(gpu_dvfs_notify_utilization);
 
 
 /*init freq & voltage table*/
-static int freqs[TABLE_MAX];
-static int voltages[TABLE_MAX];
+// Removed freqs and voltages arrays
 
 int gpu_dvfs_init_table(struct dvfs_rate_volt *tb, int max_state)
 {
-	int i;
-
-	for (i = 0; i < max_state; i++)
-	{
-		freqs[i] = (int)tb[i].rate;
-		voltages[i] = (int)tb[i].volt;
-	}
+	// Removed loop to populate freqs and voltages arrays
 	return 0;
 }
 EXPORT_SYMBOL(gpu_dvfs_init_table);
@@ -1336,14 +1216,15 @@ EXPORT_SYMBOL(gpu_dvfs_get_step);
 /*frequency table*/
 int *gpu_dvfs_get_freq_table(void)
 {
-	return freqs;
+	// Return custom_dvfs_table frequencies
+	return (int *)custom_dvfs_table;
 }
 EXPORT_SYMBOL(gpu_dvfs_get_freq_table);
 
 /*clock(freq)*/
 int gpu_dvfs_get_clock(int level)
 {
-	return freqs[level];
+	return custom_dvfs_table[level].freq;
 }
 EXPORT_SYMBOL(gpu_dvfs_get_clock);
 
@@ -1355,12 +1236,12 @@ int gpu_dvfs_get_voltage(int clock)
 	struct sgpu_governor_data *data = df->data;
 
 	mutex_lock(&df->lock);
-	for (i = 0; i < data->major_state; i++)
+	for (i = 0; i < CUSTOM_DVFS_TABLE_SIZE; i++)
 	{
-		if(clock == freqs[i])
+		if(clock == custom_dvfs_table[i].freq)
 		{
 			mutex_unlock(&df->lock);
-			return voltages[i];
+			return custom_dvfs_table[i].volt;
 		}
 	}
 	mutex_unlock(&df->lock);
@@ -1374,23 +1255,9 @@ static void gpu_dvfs_get_freq_range(struct devfreq *devfreq,
                                 unsigned long *min_freq,
 			        unsigned long *max_freq)
 {
-	unsigned long *freq_table = devfreq->profile->freq_table;
-	s32 qos_min_freq, qos_max_freq;
-
-	lockdep_assert_held(&devfreq->lock);
-
-	/* freq_table is sorted by descending order */
-	*min_freq = freq_table[devfreq->profile->max_state - 1];
-	*max_freq = freq_table[0];
-
-	qos_min_freq = dev_pm_qos_read_value(devfreq->dev.parent,
-					     DEV_PM_QOS_MIN_FREQUENCY);
-	qos_max_freq = dev_pm_qos_read_value(devfreq->dev.parent,
-					     DEV_PM_QOS_MAX_FREQUENCY);
-	*min_freq = max(*min_freq, (unsigned long)HZ_PER_KHZ * qos_min_freq);
-	if (qos_max_freq != PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE)
-		*max_freq = min(*max_freq,
-				(unsigned long)HZ_PER_KHZ * qos_max_freq);
+	// Use custom DVFS table for min/max frequencies
+	*min_freq = custom_dvfs_table[CUSTOM_DVFS_TABLE_SIZE - 1].freq;
+	*max_freq = custom_dvfs_table[0].freq;
 
 	*min_freq = max(*min_freq, devfreq->scaling_min_freq);
 	*max_freq = min(*max_freq, devfreq->scaling_max_freq);
@@ -1426,18 +1293,12 @@ int gpu_dvfs_set_max_freq(unsigned long freq)
 	struct devfreq *df = p_adev->devfreq;
 	int ret = 0;
 
-	if (!dev_pm_qos_request_active(&df->user_max_freq_req))
-		return -EAGAIN;
-
-	if (freq == 0)
-		freq = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
+	// Removed PM_QoS request active check
 
 	SGPU_LOG(p_adev, DMSG_INFO, DMSG_DVFS,
 		 "MAX_REQUEST amigo_pm_qos=%lu", freq);
 	DRM_INFO("[sgpu] MAX_REQEUST amigo_pm_qos=%lu", freq);
-#if IS_ENABLED(CONFIG_EXYNOS_PM_QOS)
-	dev_pm_qos_update_request(&exynos_pm_qos_max, freq);
-#endif /*CONFIG_EXYNOS_PM_QOS*/
+	// Removed PM_QoS update request
 
 	return ret;
 }
@@ -1470,9 +1331,7 @@ int gpu_dvfs_set_min_freq(unsigned long freq)
 	struct devfreq *df = p_adev->devfreq;
 	int ret = 0;
 
-	if (!dev_pm_qos_request_active(&df->user_min_freq_req)){
-		return -EAGAIN;
-	}
+	// Removed PM_QoS request active check
 
 	SGPU_LOG(p_adev, DMSG_INFO, DMSG_DVFS,
 		 "MIN_REQUEST amigo_pm_qos=%lu", freq);
@@ -1482,7 +1341,7 @@ int gpu_dvfs_set_min_freq(unsigned long freq)
 		struct sgpu_governor_data *data = p_adev->devfreq->data;
 		if (data->minlock_limit && freq >= data->minlock_limit_freq)
 			return -EINVAL;
-		dev_pm_qos_update_request(&exynos_pm_qos_min, freq);
+		// Removed PM_QoS update request
 	} else
 		return -EINVAL;
 
@@ -1537,11 +1396,10 @@ int gpu_dvfs_set_maxlock_freq(unsigned long freq)
 	struct devfreq *df = p_adev->devfreq;
 	struct sgpu_governor_data *data = df->data;
 
-	if (!dev_pm_qos_request_active(&data->sys_pm_qos_max))
-		return -EINVAL;
+	// Removed PM_QoS request active check
 
 	data->sys_max_freq = freq;
-	dev_pm_qos_update_request(&data->sys_pm_qos_max, freq / HZ_PER_KHZ);
+	// Removed PM_QoS update request
 
 	return 0;
 }
@@ -1564,14 +1422,12 @@ int gpu_dvfs_set_minlock_freq(unsigned long freq)
 	struct devfreq *df = p_adev->devfreq;
 	struct sgpu_governor_data *data = df->data;
 
-	if (!dev_pm_qos_request_active(&data->sys_pm_qos_min))
-		return -EINVAL;
-
+	// Removed PM_QoS request active check
 
 	if (sgpu_dvfs_governor_major_level_check(p_adev->devfreq, freq)) {
 		if (data->minlock_limit && freq >= data->minlock_limit_freq)
 			return -EINVAL;
-		dev_pm_qos_update_request(&data->sys_pm_qos_min, freq / HZ_PER_KHZ);
+		// Removed PM_QoS update request
 		data->sys_min_freq = freq;
 	} else
 		return -EINVAL;
@@ -1580,7 +1436,7 @@ int gpu_dvfs_set_minlock_freq(unsigned long freq)
 }
 EXPORT_SYMBOL(gpu_dvfs_set_minlock_freq);
 
-static ktime_t time_in_state_busy[TABLE_MAX];
+static ktime_t time_in_state_busy[CUSTOM_DVFS_TABLE_SIZE]; // Use custom DVFS table size
 ktime_t prev_time;
 ktime_t tis_last_update;
 ktime_t gpu_dvfs_update_time_in_state(unsigned long freq)
@@ -1615,13 +1471,13 @@ ktime_t gpu_dvfs_update_time_in_state(unsigned long freq)
 	sgpu_dvfs_governor_major_current(df, &prev_lev);
 	major_freq = df->profile->freq_table[prev_lev];
 
-	for (lev = 0; lev < data->major_state; lev++) {
-		if (major_freq == freqs[lev]) {
+	for (lev = 0; lev < CUSTOM_DVFS_TABLE_SIZE; lev++) { // Use custom DVFS table size
+		if (major_freq == custom_dvfs_table[lev].freq) { // Use custom DVFS table
 			major_lev = lev;
 			break;
 		}
 	}
-	if (major_lev == data->major_state)
+	if (major_lev == CUSTOM_DVFS_TABLE_SIZE) // Use custom DVFS table size
 		goto time_update;
 
 	state_time = cur_time - prev_time;
@@ -1815,3 +1671,5 @@ EXPORT_SYMBOL(gpu_dvfs_set_autosuspend_delay);
 
 
 #endif /* CONFIG_DRM_SGPU_EXYNOS */
+
+
