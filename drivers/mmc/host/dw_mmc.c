@@ -303,17 +303,6 @@ static void dw_mci_qos_put(struct dw_mci *host)
 	queue_delayed_work(pm_workqueue, &host->qos_work, msecs_to_jiffies(5));
 }
 
-/* Add sysfs for argos */
-static ssize_t dw_mci_transferred_cnt_show(struct device *dev,
-					   struct device_attribute *attr, char *buf)
-{
-	struct mmc_host *mmc = container_of(dev, struct mmc_host, class_dev);
-	struct dw_mci_slot *slot = mmc_priv(mmc);
-	struct dw_mci *host = slot->host;
-
-	return sprintf(buf, "%u\n", host->transferred_cnt);
-}
-
 DEVICE_ATTR(trans_count, 0444, dw_mci_transferred_cnt_show, NULL);
 
 static void dw_mci_transferred_cnt_init(struct dw_mci *host, struct mmc_host *mmc)
@@ -3698,8 +3687,6 @@ static int dw_mci_init_slot(struct dw_mci *host)
 #if defined(CONFIG_DEBUG_FS)
 	dw_mci_init_debugfs(slot);
 #endif
-	/* For argos */
-	dw_mci_transferred_cnt_init(host, mmc);
 
 	/* Card initially undetected */
 	slot->last_detect_state = 0;

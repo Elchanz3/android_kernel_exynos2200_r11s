@@ -36,36 +36,37 @@ struct cmucal_pll_table pll_shared4_rate_table[] = {
 };
 
 struct cmucal_pll_table pll_shared_mif_rate_table[] = {
+        PLL_RATE_MPSF(3371000000, 142, 5, 0, 0),
 	PLL_RATE_MPSF(2028000000, 132, 5, 0, 0),
 	PLL_RATE_MPSF(1690000000, 66, 3, 0, 0),
 	PLL_RATE_MPSF(842000000, 263, 12, 1, 0),
 };
 
 struct cmucal_pll_table pll_cpucl0_rate_table[] = {
-	PLL_RATE_MPSF(2100000000, 82, 3, 0, 0),
+	PLL_RATE_MPSF(2106000000, 82, 3, 0, 0),
 	PLL_RATE_MPSF(1900000000, 272, 11, 0, 0),
 	PLL_RATE_MPSF(1700000000, 177, 8, 0, 0),
 	PLL_RATE_MPSF(1200000000, 125, 8, 0, 0),
 	PLL_RATE_MPSF(600000000, 125, 8, 1, 0),
-	PLL_RATE_MPSF(200000000, 125, 12, 2, 0),
+	PLL_RATE_MPSF(100000000, 125, 12, 2, 0),
 };
 
 struct cmucal_pll_table pll_cpucl1_rate_table[] = {
-	PLL_RATE_MPSF(2700000000, 457, 13, 0, 0),
+	PLL_RATE_MPSF(2967000000, 457, 13, 0, 0),
 	PLL_RATE_MPSF(2249999872, 205, 7, 0, 0),
 	PLL_RATE_MPSF(1850000000, 289, 12, 0, 0),
 	PLL_RATE_MPSF(1300000000, 203, 12, 0, 0),
 	PLL_RATE_MPSF(650000000, 135, 8, 1, 0),
-	PLL_RATE_MPSF(300000000, 125, 8, 2, 0),
+	PLL_RATE_MPSF(100000000, 125, 8, 2, 0),
 };
 
 struct cmucal_pll_table pll_cpucl2_rate_table[] = {
-	PLL_RATE_MPSF(2950000128, 192, 5, 0, 0),
+	PLL_RATE_MPSF(2967000000, 192, 5, 0, 0),
 	PLL_RATE_MPSF(2500000000, 358, 11, 0, 0),
 	PLL_RATE_MPSF(2000000000, 78, 3, 0, 0),
 	PLL_RATE_MPSF(1400000000, 164, 9, 0, 0),
 	PLL_RATE_MPSF(700000000, 82, 9, 0, 0),
-	PLL_RATE_MPSF(300000000, 125, 8, 2, 0),
+	PLL_RATE_MPSF(100000000, 125, 8, 2, 0),
 };
 
 struct cmucal_pll_table pll_dsu_rate_table[] = {

@@ -270,9 +270,6 @@ struct dw_mci {
 	atomic_t sicd_active;
 	atomic_t sicd_cnt;
 
-	/* For argos */
-	unsigned int transferred_cnt;
-
 	/* Sfr dump */
 	struct dw_mci_sfr_ram_dump *sfr_dump;
 

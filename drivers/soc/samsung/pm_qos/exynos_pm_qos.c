@@ -174,96 +174,6 @@ static struct exynos_pm_qos_object bus_throughput_max_pm_qos = {
 	.name = "bus_throughput_max",
 };
 
-static BLOCKING_NOTIFIER_HEAD(cluster2_freq_min_notifier);
-static struct exynos_pm_qos_constraints cluster2_freq_min_constraints = {
-	.list = PLIST_HEAD_INIT(cluster2_freq_min_constraints.list),
-	.target_value = PM_QOS_CLUSTER2_FREQ_MIN_VALUE,
-	.default_value = PM_QOS_CLUSTER2_FREQ_MIN_DEFAULT_VALUE,
-	.type = EXYNOS_PM_QOS_MAX,
-	.notifiers = &cluster2_freq_min_notifier,
-	.lock = __SPIN_LOCK_UNLOCKED(cluster2_freq_min),
-	.mlock = __MUTEX_INITIALIZER(cluster2_freq_min_constraints.mlock),
-};
-static struct exynos_pm_qos_object cluster2_freq_min_pm_qos = {
-	.constraints = &cluster2_freq_min_constraints,
-	.name = "cluster2_freq_min",
-};
-
-static BLOCKING_NOTIFIER_HEAD(cluster2_freq_max_notifier);
-static struct exynos_pm_qos_constraints cluster2_freq_max_constraints = {
-	.list = PLIST_HEAD_INIT(cluster2_freq_max_constraints.list),
-	.target_value = PM_QOS_CLUSTER2_FREQ_MAX_VALUE,
-	.default_value = PM_QOS_CLUSTER2_FREQ_MAX_DEFAULT_VALUE,
-	.type = EXYNOS_PM_QOS_MIN,
-	.notifiers = &cluster2_freq_max_notifier,
-	.lock = __SPIN_LOCK_UNLOCKED(cluster2_freq_max),
-	.mlock = __MUTEX_INITIALIZER(cluster2_freq_max_constraints.mlock),
-};
-static struct exynos_pm_qos_object cluster2_freq_max_pm_qos = {
-	.constraints = &cluster2_freq_max_constraints,
-	.name = "cluster2_freq_max",
-};
-
-static BLOCKING_NOTIFIER_HEAD(cluster1_freq_min_notifier);
-static struct exynos_pm_qos_constraints cluster1_freq_min_constraints = {
-	.list = PLIST_HEAD_INIT(cluster1_freq_min_constraints.list),
-	.target_value = PM_QOS_CLUSTER1_FREQ_MIN_VALUE,
-	.default_value = PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE,
-	.type = EXYNOS_PM_QOS_MAX,
-	.notifiers = &cluster1_freq_min_notifier,
-	.lock = __SPIN_LOCK_UNLOCKED(cluster1_freq_min),
-	.mlock = __MUTEX_INITIALIZER(cluster1_freq_min_constraints.mlock),
-};
-static struct exynos_pm_qos_object cluster1_freq_min_pm_qos = {
-	.constraints = &cluster1_freq_min_constraints,
-	.name = "cluster1_freq_min",
-};
-
-static BLOCKING_NOTIFIER_HEAD(cluster1_freq_max_notifier);
-static struct exynos_pm_qos_constraints cluster1_freq_max_constraints = {
-	.list = PLIST_HEAD_INIT(cluster1_freq_max_constraints.list),
-	.target_value = PM_QOS_CLUSTER1_FREQ_MAX_VALUE,
-	.default_value = PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE,
-	.type = EXYNOS_PM_QOS_MIN,
-	.notifiers = &cluster1_freq_max_notifier,
-	.lock = __SPIN_LOCK_UNLOCKED(cluster1_freq_max),
-	.mlock = __MUTEX_INITIALIZER(cluster1_freq_max_constraints.mlock),
-};
-static struct exynos_pm_qos_object cluster1_freq_max_pm_qos = {
-	.constraints = &cluster1_freq_max_constraints,
-	.name = "cluster1_freq_max",
-};
-
-static BLOCKING_NOTIFIER_HEAD(cluster0_freq_min_notifier);
-static struct exynos_pm_qos_constraints cluster0_freq_min_constraints = {
-	.list = PLIST_HEAD_INIT(cluster0_freq_min_constraints.list),
-	.target_value = PM_QOS_CLUSTER0_FREQ_MIN_VALUE,
-	.default_value = PM_QOS_CLUSTER0_FREQ_MIN_DEFAULT_VALUE,
-	.type = EXYNOS_PM_QOS_MAX,
-	.notifiers = &cluster0_freq_min_notifier,
-	.lock = __SPIN_LOCK_UNLOCKED(cluster0_freq_min),
-	.mlock = __MUTEX_INITIALIZER(cluster0_freq_min_constraints.mlock),
-};
-static struct exynos_pm_qos_object cluster0_freq_min_pm_qos = {
-	.constraints = &cluster0_freq_min_constraints,
-	.name = "cluster0_freq_min",
-};
-
-static BLOCKING_NOTIFIER_HEAD(cluster0_freq_max_notifier);
-static struct exynos_pm_qos_constraints cluster0_freq_max_constraints = {
-	.list = PLIST_HEAD_INIT(cluster0_freq_max_constraints.list),
-	.target_value = PM_QOS_CLUSTER0_FREQ_MAX_VALUE,
-	.default_value = PM_QOS_CLUSTER0_FREQ_MAX_DEFAULT_VALUE,
-	.type = EXYNOS_PM_QOS_MIN,
-	.notifiers = &cluster0_freq_max_notifier,
-	.lock = __SPIN_LOCK_UNLOCKED(cluster0_freq_max),
-	.mlock = __MUTEX_INITIALIZER(cluster0_freq_max_constraints.mlock),
-};
-static struct exynos_pm_qos_object cluster0_freq_max_pm_qos = {
-	.constraints = &cluster0_freq_max_constraints,
-	.name = "cluster0_freq_max",
-};
-
 static BLOCKING_NOTIFIER_HEAD(cpu_online_min_notifier);
 static struct exynos_pm_qos_constraints cpu_online_min_constraints = {
 	.list = PLIST_HEAD_INIT(cpu_online_min_constraints.list),
@@ -807,12 +717,6 @@ static struct exynos_pm_qos_object ufd_throughput_pm_qos = {
 static struct exynos_pm_qos_object *exynos_pm_qos_array[] = {
 	&null_exynos_pm_qos,
 	&network_lat_pm_qos,
-	&cluster0_freq_min_pm_qos,
-	&cluster0_freq_max_pm_qos,
-	&cluster1_freq_min_pm_qos,
-	&cluster1_freq_max_pm_qos,
-	&cluster2_freq_min_pm_qos,
-	&cluster2_freq_max_pm_qos,
 	&cpu_online_min_pm_qos,
 	&cpu_online_max_pm_qos,
 	&device_throughput_pm_qos,
@@ -1603,8 +1507,6 @@ static int exynos_pm_qos_power_init(void)
 	int i;
 	struct dentry *d;
 	struct kobject *kobj;
-
-	BUILD_BUG_ON(ARRAY_SIZE(exynos_pm_qos_array) != EXYNOS_PM_QOS_NUM_CLASSES);
 
 	d = debugfs_create_dir("exynos_pm_qos", NULL);
 	kobj = kobject_create_and_add("exynos_pm_qos", kernel_kobj);

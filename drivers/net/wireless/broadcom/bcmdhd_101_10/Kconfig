@@ -241,12 +241,6 @@ config BCMDHD_OOB_HOST_WAKE
 	help
 	  Use the external GPIO pin to wake up host
 
-config SPLIT_ARGOS_SET
-	bool "Support argos table"
-	depends on BROADCOM_WIFI
-	help
-	To support SPLIT_ARGOS_SET
-
 config WLAN_TSQ_MULTIPLIER
 	bool "Enable TCP TSQ_MULTIPLIER"
 	depends on BROADCOM_WIFI

@@ -52,10 +52,10 @@ unsigned int vdd_cam_nm_lut_params[] = {
 	1, 1, 1, 2, 1, 
 };
 unsigned int vdd_cpucl2_sod_lut_params[] = {
-	2950000, 0, 
+	3230000, 0, 
 };
 unsigned int vdd_cpucl2_od_lut_params[] = {
-	2500000, 0, 
+	2800000, 0, 
 };
 unsigned int vdd_cpucl2_nm_lut_params[] = {
 	2000000, 0, 

@@ -26,6 +26,11 @@
 #include <soc/samsung/exynos-ufcc.h>
 #include <soc/samsung/freq-qos-tracer.h>
 
+#define PM_QOS_LITTLE_MAX_LIMIT 2106000
+#define PM_QOS_MID_MAX_LIMIT 2672000
+#define PM_QOS_BIG_MAX_LIMIT 2967000
+#define PM_QOS_OVER_LIMIT 3316000
+
 /*********************************************************************
  *                         USER CSTATE CONTROL                       *
  *********************************************************************/
@@ -457,8 +462,6 @@ static char *get_user_type_string(enum ufc_user_type user)
 		return "UFC_INPUT";
 	case FINGER:
 		return "FINGER";
-	case ARGOS:
-		return "ARGOS";
 	default:
 		return NULL;
 	}
@@ -510,26 +513,22 @@ unsigned int get_cpufreq_max_limit(void)
 {
 	struct ufc_domain *ufc_dom;
 	struct cpufreq_policy *policy;
-	unsigned int freq_qos_max;
 
-	/* Big --> Mid --> Lit */
 	list_for_each_entry(ufc_dom, &ufc.ufc_domain_list, list) {
 		policy = cpufreq_cpu_get(cpumask_first(&ufc_dom->cpus));
 		if (!policy)
 			return -EINVAL;
 
-		/* get value of maximum PM QoS */
-		freq_qos_max = policy->max;
-
-		if (freq_qos_max > 0) {
-			freq_qos_max = min(freq_qos_max, ufc_dom->max_freq);
-			freq_qos_max = max(freq_qos_max, ufc_dom->min_freq);
-
-			return freq_qos_max;
+		/* Assuming the order of domains is LITTLE, MID, BIG */
+		if (cpumask_test_cpu(0, &ufc_dom->cpus)) { /* LITTLE cluster */
+			return 2106000;
+		} else if (cpumask_test_cpu(4, &ufc_dom->cpus)) { /* MID cluster (example CPU 4) */
+			return 2672000;
+		} else if (cpumask_test_cpu(7, &ufc_dom->cpus)) { /* BIG cluster (example CPU 7) */
+			return 2967000;
 		}
 	}
 
-	/* no maximum PM QoS */
 	return 0;
 }
 EXPORT_SYMBOL(get_cpufreq_max_limit);
@@ -802,7 +801,7 @@ static void ufc_release_freq(enum ufc_ctrl_type type)
 		if (!target_freq || !req)
 			return;
 
-		freq_qos_update_request(req, target_freq);
+		/* freq_qos_update_request(req, target_freq); */
 	}
 }
 
@@ -851,7 +850,7 @@ static int ufc_update_min_limit(void)
 			target_freq = table_info->ufc_table[col_idx][target_idx];
 			target_freq = ufc_adjust_freq(target_freq, ufc_dom, PM_QOS_MIN_LIMIT);
 
-			freq_qos_update_request(&ufc_dom->user_min_qos_req, target_freq);
+			/* freq_qos_update_request(&ufc_dom->user_min_qos_req, target_freq); */
 		}
 
 		level = table_info->ufc_table[ufc.col_emstune][target_idx];
@@ -921,13 +920,13 @@ static int ufc_update_little_max_limit(void) {
 	int user, target_freq = RELEASE, user_lit_max_freq;
 
 	for (user = 0; user < USER_END; user++) {
-		user_lit_max_freq = ufc_req[user].freq[PM_QOS_LITTLE_MAX_LIMIT];
+		user_lit_max_freq = 2106000;
 		if (user_lit_max_freq == RELEASE)
 			continue;
 
 		/* Min Value among little_max_limit requests */
 		if (target_freq ==  RELEASE || user_lit_max_freq < target_freq)
-			target_freq = user_lit_max_freq;
+			target_freq = 2106000;
 	}
 
 	ufc.prio_vfreq[PM_QOS_LITTLE_MAX_LIMIT] = target_freq;
@@ -942,7 +941,7 @@ static int ufc_update_little_max_limit(void) {
 		if (col_idx != ufc.col_lit)
 		    continue;
 
-		freq_qos_update_request(&ufc_dom->user_lit_max_qos_req, target_freq);
+		/* freq_qos_update_request(&ufc_dom->user_lit_max_qos_req, target_freq); */
 	}
 
 	return 0;
@@ -962,8 +961,10 @@ static void freq_qos_release(struct work_struct *work)
 		if (col_idx != ufc.col_lit)
 			continue;
 
+/*
 		freq_qos_update_request(&ufc_dom->hold_lit_max_qos_req, ufc_dom->hold_freq);
 		freq_qos_update_request(&ufc_dom->user_lit_min_qos_req, ufc_dom->min_freq);
+	*/
 		break;
 	}
 }
@@ -979,8 +980,10 @@ static int ufc_update_little_min_limit(int target_freq)
 			continue;
 
 		if (target_freq) {
+/*
 			freq_qos_update_request(&ufc_dom->hold_lit_max_qos_req, ufc_dom->max_freq);
 			freq_qos_update_request(&ufc_dom->user_lit_min_qos_req, target_freq);
+		*/
 
 			if (!ufc_dom->little_min_timeout)
 				break;
@@ -1040,7 +1043,7 @@ static void ufc_update_max_limit(void)
 		}
 
 		enable_domain_cpus(ufc_dom);
-		freq_qos_update_request(&ufc_dom->user_max_qos_req, target_freq);
+		/* freq_qos_update_request(&ufc_dom->user_max_qos_req, target_freq); */
 	}
 }
 
@@ -1075,8 +1078,10 @@ static void ufc_update_min_limit_wo_boost(void)
 		target_freq = ufc_adjust_freq(target_freq, ufc_dom,
 						PM_QOS_MIN_LIMIT_WO_BOOST);
 
-		freq_qos_update_request(&ufc_dom->user_min_qos_wo_boost_req,
-						target_freq);
+/*
+			freq_qos_update_request(&ufc_dom->user_min_qos_wo_boost_req,
+							target_freq);
+		*/
 	}
 }
 
@@ -1446,6 +1451,7 @@ static int ufc_init_freq_qos(void)
 		if (!policy)
 			return -EINVAL;
 
+	/*
 		freq_qos_tracer_add_request(&policy->constraints, &ufc_dom->user_min_qos_req,
 				FREQ_QOS_MIN, policy->cpuinfo.min_freq);
 		freq_qos_tracer_add_request(&policy->constraints, &ufc_dom->user_max_qos_req,
@@ -1460,6 +1466,7 @@ static int ufc_init_freq_qos(void)
 			freq_qos_tracer_add_request(&policy->constraints, &ufc_dom->hold_lit_max_qos_req,
 				FREQ_QOS_MAX, ufc_dom->hold_freq);
 		}
+	*/
 	}
 	/* Success */
 	return 0;
@@ -1821,3 +1828,4 @@ module_exit(exynos_ufcc_exit);
 MODULE_SOFTDEP("pre: exynos-acme");
 MODULE_DESCRIPTION("Exynos UFCC driver");
 MODULE_LICENSE("GPL");
+

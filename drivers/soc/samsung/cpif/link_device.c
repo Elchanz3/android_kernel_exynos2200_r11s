@@ -3792,7 +3792,7 @@ static int parse_ect(struct mem_link_device *mld, char *dvfs_domain_name)
 
 		if (mld->mif_table.use_dfs_max_freq) {
 			mif_info("use dfs max freq\n");
-			mif_max_freq = cal_dfs_get_max_freq(mld->mif_table.cal_id_mif);
+			mif_max_freq = 3371000;
 
 			for (i = 0; i < mif_max_num_of_table; i++) {
 				if (dvfs_domain->list_level[i].level == mif_max_freq) {
