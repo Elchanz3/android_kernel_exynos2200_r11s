@@ -18,7 +18,6 @@
 #include "sgpu_user_interface.h"
 #include "sgpu_utilization.h"
 #include "amdgpu_trace.h"
-#include "sgpu_custom_dvfs.h" // Include custom DVFS header
 
 #ifdef CONFIG_DRM_SGPU_EXYNOS
 #include <soc/samsung/cal-if.h>
@@ -35,7 +34,7 @@ static int sgpu_devfreq_target(struct device *dev, unsigned long *target_freq, u
 	struct amdgpu_device *adev = ddev->dev_private;
 	struct devfreq *df = adev->devfreq;
 	struct sgpu_governor_data *data = df->data;
-	unsigned long cur_freq;
+	unsigned long cur_freq, qos_min_freq, qos_max_freq;
 	struct dev_pm_opp *target_opp;
 	int i;
 #if defined(CONFIG_DRM_SGPU_EXYNOS) && !defined(CONFIG_SOC_S5E9925_EVT0)
@@ -46,7 +45,10 @@ static int sgpu_devfreq_target(struct device *dev, unsigned long *target_freq, u
 	else
 		cur_freq = df->previous_freq;
 
-	// Removed PM_QoS frequency reading
+	qos_min_freq = dev_pm_qos_read_value(dev, DEV_PM_QOS_MIN_FREQUENCY);
+	qos_max_freq = dev_pm_qos_read_value(dev, DEV_PM_QOS_MAX_FREQUENCY);
+	if (qos_min_freq >= qos_max_freq)
+		flags = 1;
 
 	target_opp = devfreq_recommended_opp(dev, target_freq, flags);
 	if (IS_ERR(target_opp)) {
@@ -119,9 +121,38 @@ static int sgpu_devfreq_status(struct device *dev, struct devfreq_dev_status *st
 	return sgpu_utilization_capture(stat);
 }
 
-// Removed sgpu_register_pm_qos function
+static int sgpu_register_pm_qos(struct devfreq *df)
+{
+	struct sgpu_governor_data *data = df->data;
 
-// Removed sgpu_unregister_pm_qos function
+	data->devfreq = df;
+
+	data->sys_min_freq = df->scaling_min_freq;
+	data->sys_max_freq = df->scaling_max_freq;
+
+	/* Round down to kHz for PM QoS */
+	dev_pm_qos_add_request(df->dev.parent, &data->sys_pm_qos_min,
+			       DEV_PM_QOS_MIN_FREQUENCY,
+			       data->sys_min_freq / HZ_PER_KHZ);
+	dev_pm_qos_add_request(df->dev.parent, &data->sys_pm_qos_max,
+			       DEV_PM_QOS_MAX_FREQUENCY,
+			       data->sys_max_freq / HZ_PER_KHZ);
+
+	return 0;
+}
+
+static int sgpu_unregister_pm_qos(struct devfreq *df)
+{
+	struct sgpu_governor_data *data = df->data;
+
+	if (!data)
+		return -EINVAL;
+
+	dev_pm_qos_remove_request(&data->sys_pm_qos_min);
+	dev_pm_qos_remove_request(&data->sys_pm_qos_max);
+
+	return 0;
+}
 
 static int sgpu_devfreq_cur_freq(struct device *dev, unsigned long *freq)
 {
@@ -154,7 +185,7 @@ static void sgpu_devfreq_exit(struct device *dev)
 	sgpu_profiler_deinit();	
 #endif /* CONFIG_EXYNOS_GPU_PROFILER */
 #endif /* CONFIG_DRM_SGPU_EXYNOS */
-	// sgpu_unregister_pm_qos(adev->devfreq); // Removed call
+	sgpu_unregister_pm_qos(adev->devfreq);
 	sgpu_governor_deinit(adev->devfreq);
 
 	kfree(adev->devfreq->profile);
@@ -191,8 +222,11 @@ int sgpu_devfreq_init(struct amdgpu_device *adev)
 
 	adev->devfreq->suspend_freq = dp->initial_freq;
 
-	// Removed sgpu_register_pm_qos call
-
+	ret = sgpu_register_pm_qos(adev->devfreq);
+	if (ret) {
+		dev_err(adev->dev, "Unable to register pm QoS requests of devfreq %d\n", ret);
+		goto err_noti;
+	}
 	ret = sgpu_create_sysfs_file(adev->devfreq);
 	if (ret) {
 		dev_err(adev->dev, "Unable to create sysfs node %d\n", ret);
@@ -213,7 +247,7 @@ int sgpu_devfreq_init(struct amdgpu_device *adev)
 	return ret;
 
 err_sysfs:
-	// sgpu_unregister_pm_qos(adev->devfreq); // Removed call
+	sgpu_unregister_pm_qos(adev->devfreq);
 err_noti:
 	devfreq_remove_device(adev->devfreq);
 err_devfreq:
@@ -222,5 +256,3 @@ err_gov:
 	kfree(dp);
 	return ret;
 }
-
-

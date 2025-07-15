@@ -11,7 +11,6 @@
 #include "amdgpu_trace.h"
 #include "sgpu_governor.h"
 #include "sgpu_utilization.h"
-#include "sgpu_custom_dvfs.h" // Include custom DVFS header
 
 #ifdef CONFIG_DRM_SGPU_EXYNOS
 #include <soc/samsung/cal-if.h>
@@ -636,11 +635,25 @@ static int devfreq_sgpu_func(struct devfreq *df, unsigned long *freq)
 	struct device *dev= df->dev.parent;
 	uint32_t level = data->current_level;
 	struct dev_pm_opp *target_opp;
-	// Removed PM_QoS frequency reading
+	int32_t qos_min_freq, qos_max_freq;
 
-	// Removed PM_QoS frequency calculation for max_freq and min_freq
-	data->max_freq = df->scaling_max_freq;
-	data->min_freq = df->scaling_min_freq;
+	qos_max_freq = dev_pm_qos_read_value(dev, DEV_PM_QOS_MAX_FREQUENCY);
+	qos_min_freq = dev_pm_qos_read_value(dev, DEV_PM_QOS_MIN_FREQUENCY);
+
+	data->max_freq = min(df->scaling_max_freq,
+			     (unsigned long)HZ_PER_KHZ * qos_max_freq);
+
+	target_opp = devfreq_recommended_opp(dev, &data->max_freq,
+					     DEVFREQ_FLAG_LEAST_UPPER_BOUND);
+	if (IS_ERR(target_opp)) {
+		dev_err(dev, "max_freq: not found valid OPP table\n");
+		return PTR_ERR(target_opp);
+	}
+	dev_pm_opp_put(target_opp);
+
+	data->min_freq = max(df->scaling_min_freq,
+			      (unsigned long)HZ_PER_KHZ * qos_min_freq);
+	data->min_freq = min(data->max_freq, data->min_freq);
 
 	if (data->in_suspend) {
 		*freq = max(data->min_freq, min(data->max_freq,	df->resume_freq));
@@ -867,7 +880,14 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 	struct drm_device *ddev = dev_get_drvdata(dev);
 	struct amdgpu_device *adev = ddev->dev_private;
 #ifdef CONFIG_DRM_SGPU_EXYNOS
-	// Removed unused variables related to cal-if and dvfs_rate_volt
+	uint32_t dt_freq;
+	unsigned long max_freq, min_freq;
+	struct dvfs_rate_volt *g3d_rate_volt = NULL;
+	struct dvfs_rate_volt *major_table = NULL;
+	int cal_get_dvfs_lv_num;
+	int cal_table_size;
+	unsigned long cal_maxfreq, cal_minfreq;
+	unsigned long cur_freq;
 #if IS_ENABLED(CONFIG_GPU_THERMAL)
 	struct device_node *gpu_tmu;
 	uint32_t gpu_tmuid;
@@ -876,7 +896,7 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 
 	dp->initial_freq = DEFAULT_INITIAL_FREQ;
 	dp->polling_ms = DEFAULT_POLLING_MS;
-	dp->max_state = CUSTOM_DVFS_TABLE_SIZE; // Use custom DVFS table size
+	dp->max_state = DVFS_TABLE_ROW_MAX;
 	data = kzalloc(sizeof(struct sgpu_governor_data), GFP_KERNEL);
 	if (!data) {
 		ret = -ENOMEM;
@@ -929,18 +949,50 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 	data->local_minlock_status = false;
 #endif /* CONFIG_GPU_THERMAL */
 
-	// Removed cal_dfs_get_lv_num and related variables
+	cal_get_dvfs_lv_num = cal_dfs_get_lv_num(adev->cal_id);
+	dp->max_state = cal_get_dvfs_lv_num;
 
-	// Removed g3d_rate_volt and major_table allocations
+	g3d_rate_volt = kzalloc(sizeof(struct dvfs_rate_volt) * cal_get_dvfs_lv_num,
+				GFP_KERNEL);
+	if (!g3d_rate_volt) {
+		ret = -ENOMEM;
+		goto err_kfree1;
+	}
 
-	// Removed cal_dfs_get_rate_asv_table, cal_dfs_get_boot_freq, cal_dfs_get_max_freq, cal_dfs_get_min_freq
+	major_table = kzalloc(sizeof(struct dvfs_rate_volt) * cal_get_dvfs_lv_num,
+				     GFP_KERNEL);
+	if (!major_table) {
+		ret = -ENOMEM;
+		goto err_kfree1;
+	}
+
+	cal_table_size = cal_dfs_get_rate_asv_table(adev->cal_id, g3d_rate_volt);
+	dp->initial_freq = cal_dfs_get_boot_freq(adev->cal_id);
+	cal_maxfreq = cal_dfs_get_max_freq(adev->cal_id);
+	cal_minfreq = cal_dfs_get_min_freq(adev->cal_id);
 
 	ret = of_property_read_u32(dev->of_node, "compute_weight",
 				   &data->compute_weight);
 	if (ret)
 		data->compute_weight = 100;
 
-	// Removed max_freq and min_freq calculations based on dt_freq and cal_maxfreq/minfreq
+	ret = of_property_read_u32(dev->of_node, "max_freq", &dt_freq);
+	if (!ret) {
+		max_freq = (unsigned long)dt_freq;
+		max_freq = min(max_freq, cal_maxfreq);
+	} else {
+		max_freq = cal_maxfreq;
+	}
+
+	ret = of_property_read_u32(dev->of_node, "min_freq", &dt_freq);
+	if (!ret) {
+		min_freq = (unsigned long)dt_freq;
+		min_freq = max(min_freq, cal_minfreq);
+	} else {
+		min_freq = cal_minfreq;
+	}
+
+	min_freq = min(max_freq, min_freq);
 
 	adev->gpu_dss_freq_id = 0;
 #if IS_ENABLED(CONFIG_DEBUG_SNAPSHOT)
@@ -958,8 +1010,21 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 	}
 
 	for (i = 0, j = 0; i < dp->max_state; i++) {
-		unsigned long freq = custom_dvfs_table[i].freq;
-		unsigned long volt = custom_dvfs_table[i].volt;
+		uint32_t freq, volt;
+
+#ifdef CONFIG_DRM_SGPU_EXYNOS
+		if (g3d_rate_volt[i].rate > max_freq ||
+		    g3d_rate_volt[i].rate < min_freq)
+			continue;
+
+		freq =  g3d_rate_volt[i].rate;
+		volt =  g3d_rate_volt[i].volt;
+		major_table[data->major_state].rate = freq;
+		major_table[data->major_state].volt = volt;
+#else
+		freq = dp->initial_freq;
+		volt = 0;
+#endif
 
 		if (freq >= dp->initial_freq) {
 			data->current_level = j;
@@ -993,27 +1058,46 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 		j++;
 		data->major_state++;
 
-		// Removed fine-grained step logic
+		if ((i < dp->max_state - 1) &&
+		    (g3d_rate_volt[i + 1].rate >= min_freq) &&
+		    freq <= DEFAULT_FINE_GRAINED_HIGH_FREQ &&
+		    freq >= DEFAULT_FINE_GRAINED_LOW_FREQ) {
+			unsigned long step = (g3d_rate_volt[i].rate -
+					      g3d_rate_volt[i+1].rate) /
+						data->fine_grained_step;
+			for (k = 1; k < data->fine_grained_step; k++) {
+				unsigned long nomalize_freq =
+					(freq - k * step + HZ_PER_KHZ / 2) / HZ_PER_KHZ * HZ_PER_KHZ;
+				dp->freq_table[j] = nomalize_freq;
+				ret = dev_pm_opp_add(dev, nomalize_freq, volt);
+				if (ret) {
+					dev_err(dev, "failed to add opp entries\n");
+					goto err_kfree2;
+				}
+				j++;
+			}
+			data->fine_grained_high_level = j - 1;
+		}
 	}
 	dp->max_state = j;
 	dp->initial_freq = dp->freq_table[data->current_level];
 
 #ifdef CONFIG_DRM_SGPU_EXYNOS
-	// Removed gpu_dvfs_init_table(major_table, data->major_state);
+	gpu_dvfs_init_table(major_table, data->major_state);
 	gpu_dvfs_init_utilization_notifier_list();
 
-	unsigned long cur_freq_cal = cal_dfs_cached_get_rate(adev->cal_id); // Renamed to avoid conflict
+	cur_freq = cal_dfs_cached_get_rate(adev->cal_id);
 
 #if IS_ENABLED(CONFIG_DEBUG_SNAPSHOT)
 	if (adev->gpu_dss_freq_id)
-		dbg_snapshot_freq(adev->gpu_dss_freq_id, cur_freq_cal, dp->initial_freq, DSS_FLAG_IN);
+		dbg_snapshot_freq(adev->gpu_dss_freq_id, cur_freq, dp->initial_freq, DSS_FLAG_IN);
 #endif
 	cal_dfs_set_rate(adev->cal_id, dp->initial_freq);
 #if IS_ENABLED(CONFIG_DEBUG_SNAPSHOT)
 	if (adev->gpu_dss_freq_id)
-		dbg_snapshot_freq(adev->gpu_dss_freq_id, cur_freq_cal, dp->initial_freq, DSS_FLAG_OUT);
+		dbg_snapshot_freq(adev->gpu_dss_freq_id, cur_freq, dp->initial_freq, DSS_FLAG_OUT);
 #endif
-	cur_freq_cal = cal_dfs_cached_get_rate(adev->cal_id); // Renamed to avoid conflict
+	cur_freq = cal_dfs_cached_get_rate(adev->cal_id);
 
 #ifndef CONFIG_SOC_S5E9925_EVT0
 	data->bg3d_dvfs = devm_ioremap(dev, 0x16cd0000, 0x1000);
@@ -1053,8 +1137,8 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 	}
 
 #ifdef CONFIG_DRM_SGPU_EXYNOS
-	// Removed kfree(g3d_rate_volt);
-	// Removed kfree(major_table);
+	kfree(g3d_rate_volt);
+	kfree(major_table);
 #endif
 
 	return ret;
@@ -1068,8 +1152,8 @@ err_kfree2:
 	kfree(dp->freq_table);
 err_kfree1:
 #ifdef CONFIG_DRM_SGPU_EXYNOS
-	// Removed kfree(g3d_rate_volt);
-	// Removed kfree(major_table);
+	kfree(g3d_rate_volt);
+	kfree(major_table);
 #endif
 	kfree(data);
 err:
@@ -1088,5 +1172,3 @@ void sgpu_governor_deinit(struct devfreq *df)
 	if (ret)
 		pr_err("%s: failed remove governor %d\n", __func__, ret);
 }
-
-
