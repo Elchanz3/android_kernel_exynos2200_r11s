@@ -160,6 +160,13 @@ build_boot_image() {
   fi
 }
 
+install_dependencies() {
+  echo "${BOLD_GREEN}***** Installing build dependencies *****${RESET}"
+  sudo apt-get install git ccache automake lzop gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev make optipng flex bison gcc clang lld libncurses-dev libssl-dev libelf-dev -y
+  echo "${BOLD_GREEN}***** Dependencies installation complete *****${RESET}"
+  pause "continue"
+}
+
 # Run dependency checks
 check_and_clone "https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r416183b" "$PARENT_DIR/clang-r416183b" "Android Clang/LLVM"
 check_and_clone "https://android.googlesource.com/platform/prebuilts/gas/linux-x86" "$PARENT_DIR/gas/linux-x86" "GNU assembler"
@@ -174,19 +181,21 @@ show_menus() {
   echo " 3. Create ${UNDERLINE}Flashable ZIP${RESET}"
   echo " 4. Generate ${UNDERLINE}vendor_boot image${RESET}"
   echo " 5. Generate ${UNDERLINE}boot image${RESET}"
-  echo " 6. ${UNDERLINE}Exit${RESET}"
+  echo " 6. ${UNDERLINE}Install Build Dependencies${RESET}"
+  echo " 7. ${UNDERLINE}Exit${RESET}"
 }
 
 read_options() {
   local choice
-  read -rp "Enter choice [1-6]: " choice
+  read -rp "Enter choice [1-7]: " choice
   case $choice in
     1) build_kernel ;;
     2) clean ;;
     3) anykernel3 ;;
     4) build_vendor_boot ;;
-	5) build_boot_image ;;
-    6) exit 0 ;;
+    5) build_boot_image ;;
+    6) install_dependencies ;;
+    7) exit 0 ;;
     *) pause "return to menu" "Invalid option! " ;;
   esac
 }
@@ -195,4 +204,3 @@ while true; do
   show_menus
   read_options
 done
-
