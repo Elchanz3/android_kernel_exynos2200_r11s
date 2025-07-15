@@ -63,6 +63,29 @@ config MQ_IOSCHED_SSG_CGROUP
 	depends on MQ_IOSCHED_SSG
 	help
 	  Control Group for SamSung Generic IO scheduler.
+	  
+config MQ_IOSCHED_WESSEL
+	tristate "Wessel I/O scheduler"
+	default n
+	depends on BLK_CGROUP
+	help
+	  The Wessel I/O scheduler is a custom I/O scheduler designed for
+	  high-performance storage devices, focusing on fairness and
+	  resource management through cgroups.
+
+	  If unsure, say N.
+
+config MQ_IOSCHED_WESSEL_CGROUP
+	bool "Wessel I/O scheduler cgroup support"
+	default n
+	depends on MQ_IOSCHED_WESSEL
+	depends on BLK_CGROUP
+	help
+	  This enables cgroup support for the Wessel I/O scheduler, allowing
+	  for fine-grained control over I/O resource allocation for different
+	  cgroups.
+
+	  If unsure, say N.
 
 endmenu
 
