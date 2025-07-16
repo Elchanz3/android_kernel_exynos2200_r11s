@@ -3673,8 +3673,8 @@ static int zram_add(void)
 	zram->disk->private_data = zram;
 	snprintf(zram->disk->disk_name, 16, "zram%d", device_id);
 
-	/* Set default 10GB zram size */
-	zram->disksize = 10ULL * 1024 * 1024 * 1024;
+	/* Set default 8GB zram size */
+	zram->disksize = 8ULL * 1024 * 1024 * 1024;
 	
 	/* Set compressor name */
 	strlcpy(zram->compressor, default_compressor, sizeof(zram->compressor));
