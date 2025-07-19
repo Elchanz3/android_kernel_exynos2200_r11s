@@ -5207,11 +5207,12 @@
 		memory-region = <0x99>;
 		flags = <0x1e>;
 		g3d_cmu_cal_id = <0xb04000d>;
-		min_freq = <1210000>;
-		max_freq = <1306000>;
+		min_freq = <133000>;
+		max_freq = <1600000>;
 		samsung,imgloader-s2mpu-support;
 		dma-coherent;
 		power-domains = <0x9a>;
+		mif_min_lock = "421000 404000:1352000 500000:1716000 807000:2288000 903000:2535000 999000:2730000 1095000:3172000";
 		mif_cl_boost_min_lock = "421000 404000:1014000 605000:1352000 807000:1539000 903000:1716000 999000:2028000";
 		mo_scenario = "default 404000:g3d_performance";
 		llc_ways = "0 605000:16";
@@ -6861,12 +6862,108 @@
 
 		dsim-modes {
 
+			1440x3200@30 {
+				mode-name = "1440x3200@30";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x2282>;
+			};
+
+			1440x3200@60 {
+				mode-name = "1440x3200@60";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x2282>;
+			};
+
+			1080x2400@30 {
+				mode-name = "1080x2400@30";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x2c61>;
+			};
+
+			1080x2400@60 {
+				mode-name = "1080x2400@60";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x2c61>;
+			};
+
 			1080x2400@120 {
 				mode-name = "1080x2400@120";
 				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
 				hs-clk = <0x552>;
 				esc-clk = <0x14>;
 				cmd_underrun_cnt = <0xeee>;
+			};
+
+			1080x2340@60 {
+				mode-name = "1080x2340@60";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x2c61>;
+			};
+
+			1080x2340@120 {
+				mode-name = "1080x2340@120";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0xeee>;
+			};
+
+			1080x2316@60 {
+				mode-name = "1080x2316@60";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x2c61>;
+			};
+
+			1080x2316@120 {
+				mode-name = "1080x2316@120";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0xeee>;
+			};
+
+			720x1600@30 {
+				mode-name = "720x1600@30";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x3370>;
+			};
+
+			720x1600@60 {
+				mode-name = "720x1600@60";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x3370>;
+			};
+
+			720x1600@120 {
+				mode-name = "720x1600@120";
+				pmsk = <0x05 0x59 0x00 0xac00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x552>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x15fd>;
+			};
+
+			640x480 {
+				mode-name = "640x480";
+				pmsk = <0x02 0x8a 0x01 0x89d9 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00>;
+				hs-clk = <0x37e>;
+				esc-clk = <0x14>;
+				cmd_underrun_cnt = <0x144b>;
 			};
 		};
 	};
@@ -7628,6 +7725,13 @@
 			val = <0x300000>;
 		};
 
+		ufs-pm-qos {
+			freq-int = <0x510e0>;
+			perf-int = "\0\f5";
+			perf-mif = <0x3066a0>;
+			cpufreq-qos-levels = <0x06 0x06 0x04>;
+		};
+
 		ufs-protector {
 			valid-check = [00];
 		};
@@ -8203,14 +8307,14 @@
 			reg = <0x00 0x17000010 0x00>;
 			devfreq_type = <0x00>;
 			devfreq_domain_name = "MIF";
-			pm_qos_class = <0x0f>;
+			pm_qos_class = <0x0e>;
 			pm_qos_class_max = <0x0f>;
 			ess_flag = <0x04>;
 			dm-index = <0x03>;
 			clocks = <0x19 0x5dc>;
 			clock-names = "DEVFREQ";
 			use_delay_time = "false";
-			freq_info = <0x3066a0 0x3066a0 0x3066a0 0x3066a0 0x3066a0 0x3066a0>;
+			freq_info = <0x3066a0 0x66c88 0x66c88 0x66c88 0x3066a0 0xf78f0>;
 			boot_info = <0x28 0x3066a0>;
 			governor = <0x00>;
 			dfs_id = <0xb040000>;
@@ -8231,6 +8335,15 @@
 
 				mode_0 {
 					mode_id = <0x00>;
+					target_load = "60 676000:84 845000:90 1014000:95 1352000:97 2028000:99";
+					min_sample_time = <0x32>;
+					hold_sample_time = <0x64>;
+					hispeed_load = <0x62>;
+					hispeed_freq = <0xf78f0>;
+				};
+
+				mode_1 {
+					mode_id = <0x01>;
 					target_load = "3 3172000:3";
 					min_sample_time = <0x32>;
 					hold_sample_time = <0x64>;
@@ -9235,6 +9348,148 @@
 		reset_cond = <0x0f>;
 		interrupts = <0x00 0x25b 0x04 0x00 0x00 0x262 0x04 0x00 0x00 0x269 0x04 0x00 0x00 0x270 0x04 0x00>;
 		phandle = <0x327>;
+	};
+
+	amb_control {
+		compatible = "samsung,exynos-amb-control";
+		amb_tz_name = "battery";
+		default_sampling_rate = <0x3e8>;
+		high_sampling_rate = <0x64>;
+		increase_sampling_temp = <0xd6d8>;
+		decrease_sampling_temp = <0xc350>;
+		mcinfo_threshold = <0xea60>;
+		use_mif_throttle;
+		mif_down_threshold = <0xea60>;
+		mif_up_threshold = <0xd6d8>;
+		mif_throttle_freq = <0x1a2f20>;
+		use_llc_throttle;
+		llc_off_thresohld = <0x14438>;
+		llc_on_threshold = <0x13880>;
+
+		tz_big {
+			tz = <0x136>;
+			hotplug_cpu_list = "7";
+			hotplug_in_threshold = <0xea60>;
+			hotplug_out_threshold = <0xfde8>;
+
+			trip_set {
+
+				trip_0 {
+					trigger_cond = <0x01>;
+					trip_point = <0x02>;
+					trigger_temp = <0xea60>;
+					release_temp = <0xd6d8>;
+					throttle_temp = <0x124f8>;
+				};
+
+				trip_1 {
+					trigger_cond = <0x01>;
+					trip_point = <0x01>;
+					trigger_temp = <0xea60>;
+					release_temp = <0xd6d8>;
+					throttle_temp = <0x11170>;
+				};
+
+				trip_2 {
+					trigger_cond = <0x00>;
+					trip_point = <0x02>;
+					trigger_temp = <0x2710>;
+					release_temp = <0x61a8>;
+					throttle_temp = <0x14c08>;
+				};
+
+				trip_3 {
+					trigger_cond = <0x00>;
+					trip_point = <0x01>;
+					trigger_temp = <0x2710>;
+					release_temp = <0x61a8>;
+					throttle_temp = <0x13880>;
+				};
+			};
+		};
+
+		tz_mid {
+			tz = <0x137>;
+			hotplug_cpu_list = "5-6";
+			hotplug_in_threshold = <0xea60>;
+			hotplug_out_threshold = <0xfde8>;
+
+			trip_set {
+
+				trip_0 {
+					trigger_cond = <0x01>;
+					trip_point = <0x02>;
+					trigger_temp = <0xea60>;
+					release_temp = <0xd6d8>;
+					throttle_temp = <0x124f8>;
+				};
+
+				trip_1 {
+					trigger_cond = <0x01>;
+					trip_point = <0x01>;
+					trigger_temp = <0xea60>;
+					release_temp = <0xd6d8>;
+					throttle_temp = <0x11170>;
+				};
+
+				trip_2 {
+					trigger_cond = <0x00>;
+					trip_point = <0x02>;
+					trigger_temp = <0x2710>;
+					release_temp = <0x61a8>;
+					throttle_temp = <0x14c08>;
+				};
+
+				trip_3 {
+					trigger_cond = <0x00>;
+					trip_point = <0x01>;
+					trigger_temp = <0x2710>;
+					release_temp = <0x61a8>;
+					throttle_temp = <0x13880>;
+				};
+			};
+		};
+
+		tz_lit {
+			tz = <0x138>;
+			hotplug_cpu_list = "2-3";
+			hotplug_in_threshold = <0x11170>;
+			hotplug_out_threshold = <0x124f8>;
+
+			trip_set {
+
+				trip_0 {
+					trigger_cond = <0x00>;
+					trip_point = <0x02>;
+					trigger_temp = <0x2710>;
+					release_temp = <0x61a8>;
+					throttle_temp = <0x14c08>;
+				};
+
+				trip_1 {
+					trigger_cond = <0x00>;
+					trip_point = <0x01>;
+					trigger_temp = <0x2710>;
+					release_temp = <0x61a8>;
+					throttle_temp = <0x13880>;
+				};
+			};
+		};
+
+		tz_isp {
+			tz = <0x139>;
+
+			trip_set {
+
+				trip_0 {
+					trigger_cond = <0x00>;
+					trip_point = <0x01>;
+					trigger_temp = <0xea60>;
+					release_temp = <0xd6d8>;
+					throttle_temp = <0x17318>;
+				};
+			};
+		};
 	};
 
 	exynos-ect {
@@ -14272,7 +14527,7 @@
 					thrd_mb = <0x00>;
 					freq_mfc = <0x20788>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x66c88>;
 					bts_scen = "default";
 					time_fw = <0x4d6>;
 				};
@@ -14281,7 +14536,7 @@
 					thrd_mb = <0x85727>;
 					freq_mfc = <0x412f8>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x854d0>;
 					bts_scen = "default";
 					time_fw = <0x34a>;
 				};
@@ -14290,7 +14545,7 @@
 					thrd_mb = <0x11cf37>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xa50a0>;
 					bts_scen = "default";
 					time_fw = <0x29b>;
 				};
@@ -14299,7 +14554,7 @@
 					thrd_mb = <0x1c5f35>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xce4c8>;
 					bts_scen = "default";
 					time_fw = <0x242>;
 				};
@@ -14308,7 +14563,7 @@
 					thrd_mb = <0x1fb6e1>;
 					freq_mfc = <0x72420>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xf78f0>;
 					bts_scen = "default";
 					time_fw = <0x1e3>;
 				};
@@ -14317,7 +14572,7 @@
 					thrd_mb = <0x271c0a>;
 					freq_mfc = <0x82208>;
 					freq_int = <0x510e0>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x14a140>;
 					bts_scen = "default";
 					time_fw = <0x16a>;
 				};
@@ -14326,7 +14581,7 @@
 					thrd_mb = <0x306d8d>;
 					freq_mfc = <0xa1dd8>;
 					freq_int = <0x61a80>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x14a140>;
 					bts_scen = "default";
 					time_fw = <0x132>;
 				};
@@ -14335,7 +14590,7 @@
 					thrd_mb = <0x38b5b1>;
 					freq_mfc = <0xb5e28>;
 					freq_int = <0x82208>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x177bb8>;
 					bts_scen = "default";
 					time_fw = <0x10b>;
 				};
@@ -14344,7 +14599,7 @@
 					thrd_mb = <0x41570e>;
 					freq_mfc = <0xb5e28>;
 					freq_int = <0xa1dd8>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x1ef1e0>;
 					bts_scen = "default";
 					time_fw = <0xeb>;
 				};
@@ -14365,7 +14620,7 @@
 					thrd_mb = <0x00>;
 					freq_mfc = <0x20788>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x66c88>;
 					bts_scen = "default";
 					time_fw = <0x4d6>;
 				};
@@ -14374,7 +14629,7 @@
 					thrd_mb = <0x85727>;
 					freq_mfc = <0x412f8>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x854d0>;
 					bts_scen = "default";
 					time_fw = <0x34a>;
 				};
@@ -14383,7 +14638,7 @@
 					thrd_mb = <0x11cf37>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xa50a0>;
 					bts_scen = "default";
 					time_fw = <0x29b>;
 				};
@@ -14392,7 +14647,7 @@
 					thrd_mb = <0x1c5f35>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xce4c8>;
 					bts_scen = "default";
 					time_fw = <0x242>;
 				};
@@ -14401,7 +14656,7 @@
 					thrd_mb = <0x1fb6e1>;
 					freq_mfc = <0x82208>;
 					freq_int = <0x61a80>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xce4c8>;
 					bts_scen = "default";
 					time_fw = <0x1d7>;
 				};
@@ -14410,7 +14665,7 @@
 					thrd_mb = <0x26f671>;
 					freq_mfc = <0x72420>;
 					freq_int = <0x510e0>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x177bb8>;
 					bts_scen = "mfc_uhd";
 					time_fw = <0x167>;
 				};
@@ -14419,7 +14674,7 @@
 					thrd_mb = <0x3075be>;
 					freq_mfc = <0xa1dd8>;
 					freq_int = <0xa1dd8>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x1a2f20>;
 					bts_scen = "default";
 					time_fw = <0x11f>;
 				};
@@ -14430,7 +14685,7 @@
 				freq_cluster = <0x1a94b0 0x1cf610 0x163780>;
 				freq_mfc = <0xa2990>;
 				freq_int = <0x825f0>;
-				freq_mif = <0x3066a0>;
+				freq_mif = <0x29a810>;
 				bts_scen = "mfc_uhd_10bit";
 			};
 		};
@@ -14476,7 +14731,7 @@
 					thrd_mb = <0x00>;
 					freq_mfc = <0x20788>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x66c88>;
 					bts_scen = "default";
 					time_fw = <0x4d6>;
 				};
@@ -14485,7 +14740,7 @@
 					thrd_mb = <0x85727>;
 					freq_mfc = <0x39210>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x854d0>;
 					bts_scen = "default";
 					time_fw = <0x34a>;
 				};
@@ -14494,7 +14749,7 @@
 					thrd_mb = <0x11cf37>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xa50a0>;
 					bts_scen = "default";
 					time_fw = <0x29b>;
 				};
@@ -14503,7 +14758,7 @@
 					thrd_mb = <0x1c5f35>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xce4c8>;
 					bts_scen = "default";
 					time_fw = <0x242>;
 				};
@@ -14512,7 +14767,7 @@
 					thrd_mb = <0x1fb6e1>;
 					freq_mfc = <0x72420>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xf78f0>;
 					bts_scen = "default";
 					time_fw = <0x1e3>;
 				};
@@ -14521,7 +14776,7 @@
 					thrd_mb = <0x271c0a>;
 					freq_mfc = <0x82208>;
 					freq_int = <0x510e0>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x14a140>;
 					bts_scen = "default";
 					time_fw = <0x16a>;
 				};
@@ -14530,7 +14785,7 @@
 					thrd_mb = <0x306d8d>;
 					freq_mfc = <0xa1dd8>;
 					freq_int = <0x61a80>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x14a140>;
 					bts_scen = "default";
 					time_fw = <0x132>;
 				};
@@ -14539,7 +14794,7 @@
 					thrd_mb = <0x38b5b1>;
 					freq_mfc = <0xb5e28>;
 					freq_int = <0x82208>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x177bb8>;
 					bts_scen = "default";
 					time_fw = <0x10b>;
 				};
@@ -14548,7 +14803,7 @@
 					thrd_mb = <0x41570e>;
 					freq_mfc = <0xb5e28>;
 					freq_int = <0xa1dd8>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x1ef1e0>;
 					bts_scen = "default";
 					time_fw = <0xeb>;
 				};
@@ -14569,7 +14824,7 @@
 					thrd_mb = <0x00>;
 					freq_mfc = <0x20788>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x66c88>;
 					bts_scen = "default";
 					time_fw = <0x4d6>;
 				};
@@ -14578,7 +14833,7 @@
 					thrd_mb = <0x85727>;
 					freq_mfc = <0x412f8>;
 					freq_int = <0x20788>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x854d0>;
 					bts_scen = "default";
 					time_fw = <0x34a>;
 				};
@@ -14587,7 +14842,7 @@
 					thrd_mb = <0x11cf37>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xa50a0>;
 					bts_scen = "default";
 					time_fw = <0x29b>;
 				};
@@ -14596,7 +14851,7 @@
 					thrd_mb = <0x1c5f35>;
 					freq_mfc = <0x510e0>;
 					freq_int = <0x30d40>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xce4c8>;
 					bts_scen = "default";
 					time_fw = <0x242>;
 				};
@@ -14605,7 +14860,7 @@
 					thrd_mb = <0x1fb6e1>;
 					freq_mfc = <0x82208>;
 					freq_int = <0x61a80>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0xce4c8>;
 					bts_scen = "default";
 					time_fw = <0x1d7>;
 				};
@@ -14614,7 +14869,7 @@
 					thrd_mb = <0x26f671>;
 					freq_mfc = <0x72420>;
 					freq_int = <0x510e0>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x177bb8>;
 					bts_scen = "mfc_uhd";
 					time_fw = <0x167>;
 				};
@@ -14623,7 +14878,7 @@
 					thrd_mb = <0x3075be>;
 					freq_mfc = <0xa1dd8>;
 					freq_int = <0xa1dd8>;
-					freq_mif = <0x3066a0>;
+					freq_mif = <0x1a2f20>;
 					bts_scen = "default";
 					time_fw = <0x11f>;
 				};
@@ -14634,7 +14889,7 @@
 				freq_cluster = <0x1a94b0 0x1cf610 0x163780>;
 				freq_mfc = <0xa2990>;
 				freq_int = <0x825f0>;
-				freq_mif = <0x3066a0>;
+				freq_mif = <0x29a810>;
 				bts_scen = "mfc_uhd_10bit";
 			};
 		};
@@ -14722,6 +14977,71 @@
 		compatible = "samsung,exynos-repeater";
 		power-domains = <0x0b>;
 		phandle = <0x332>;
+	};
+
+	xperf {
+		compatible = "samsung,exynos-perf";
+		status = "ok";
+		cal-id-mif = <0xb040000>;
+		cal-id-g3d = <0xb04000d>;
+		cal-id-cpucl0 = <0xb040002>;
+		cal-id-cpucl1 = <0xb040003>;
+		cal-id-cpucl2 = <0xb040004>;
+		power-coeff = <0x178 0x26c 0x3b8>;
+
+		pago {
+			gov-ms = <0xc8>;
+			gov-run = <0x00>;
+			power-limit = <0x1f40 0x1f40 0x1f40 0x1f40>;
+			multi-volt = <0x7d0 0x41a 0x41a>;
+			batt-tz-names = "battery";
+			batt-temp-thd = <0x4e20>;
+		};
+
+		gmc {
+			bind-cpu = <0x00>;
+			polling-ms = <0x3e8>;
+			cpu-tz-names = "LITTLE\0MID\0BIG";
+			gpu-tz-names = "G3D";
+
+			type0 {
+				set-timer = <0x00 0x03>;
+				throttle = <0x01>;
+
+				trigger {
+					gpu-fps = <0x50>;
+					gpu-freq = <0xdbba0>;
+					gpu-temp = <0x11170>;
+					cpu-temp = <0x11170 0x11170 0x11170>;
+				};
+
+				release {
+					gpu-fps = <0x14>;
+					gpu-temp = <0xd6d8>;
+					cpu-temp = <0xd6d8 0xd6d8 0xd6d8>;
+				};
+			};
+
+			type1 {
+				boost-cnt = <0x00>;
+				boost-step = <0x00>;
+				cpu-maxlock = <0x119400 0x177000 0x177000>;
+				fps-drop = <0x0a>;
+
+				trigger {
+					gpu-fps = <0x1e>;
+					gpu-freq = <0xdbba0>;
+					gpu-temp = <0xea60>;
+					cpu-temp = <0xea60 0xea60 0xea60>;
+				};
+
+				release {
+					gpu-fps = <0x0a>;
+					gpu-temp = <0xd6d8>;
+					cpu-temp = <0xd6d8 0xd6d8 0xd6d8>;
+				};
+			};
+		};
 	};
 
 	exynos-cpu-profiler {
@@ -14842,7 +15162,7 @@
 				typ = <0x05>;
 				lev = <0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09 0x0a 0x0b 0x0c>;
 				frq = <0xc64 0xaaa 0x9e7 0x8f0 0x7ec 0x6b3 0x603 0x548 0x3f6 0x34d 0x2a4 0x222 0x1a5>;
-				qos = <0x3066a0>;
+				qos = <0x3066a0 0x29a810 0x26ae58 0x22e980 0x1ef1e0 0x1a2d2c 0x177bb8 0x14a140 0xf78f0 0xce4c8 0xa50a0 0x854d0 0x66c88>;
 			};
 		};
 	};
