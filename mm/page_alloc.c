@@ -4880,7 +4880,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	unsigned long vh_record;
 	bool should_alloc_retry = false;
 
-	trace_android_vh_alloc_pages_slowpath_begin(gfp_mask, order, &vh_record);
 	task_cputime(current, &utime, &stime_s);
 
 	/*
@@ -5161,8 +5160,15 @@ fail:
 	if (page)
 		goto got_pg;
 got_pg:
-<<<<<<< HEAD
-	trace_android_vh_alloc_pages_slowpath_end(gfp_mask, order, vh_record);
+
+	if (woke_kswapd)
+		atomic_long_dec(&kswapd_waiters);
+	if (used_vmpressure)
+		vmpressure_dec_users();
+	if (!page)
+		warn_alloc(gfp_mask, ac->nodemask,
+				"page allocation failure: order:%u", order);
+
 	task_cputime(current, &utime, &stime_e);
 	stime_d = stime_e - stime_s;
 	if (stime_d / NSEC_PER_MSEC > 256) {
@@ -5187,16 +5193,7 @@ got_pg:
 			a_anon << (PAGE_SHIFT-10), in_anon << (PAGE_SHIFT-10),
 			a_file << (PAGE_SHIFT-10), in_file << (PAGE_SHIFT-10));
 	}
-=======
-	if (woke_kswapd)
-		atomic_long_dec(&kswapd_waiters);
-	if (used_vmpressure)
-		vmpressure_dec_users();
-	if (!page)
-		warn_alloc(gfp_mask, ac->nodemask,
-				"page allocation failure: order:%u", order);
-	trace_android_vh_alloc_pages_slowpath(gfp_mask, order, alloc_start);
->>>>>>> d74f5a50d9f7 (mm: Stop kswapd early when nothing's waiting for it to free pages)
+
 	return page;
 }
 

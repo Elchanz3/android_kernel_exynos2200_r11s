@@ -5207,8 +5207,9 @@
 		memory-region = <0x99>;
 		flags = <0x1e>;
 		g3d_cmu_cal_id = <0xb04000d>;
-		min_freq = <133000>;
-		max_freq = <1600000>;
+		min_freq = <300000>;
+		max_freq = <1306000>;
+		freq-table = <300000 402000 601000 1100000 1232000 1296000 1306000>;
 		samsung,imgloader-s2mpu-support;
 		dma-coherent;
 		power-domains = <0x9a>;
