@@ -6561,15 +6561,15 @@
 			cal-id = <0xb040002>;
 			dm-type = <0x00>;
 			dss-type = <0x00>;
-			max-freq = <2106000>;
-			min-freq = <576000>;
-			pm_qos-booting = <2106000>;
+			max-freq = <1824000>;
+			min-freq = <691200>;
+			pm_qos-booting = <1824000>;
 			fast-switch;
 			thread-run-on = "0-5";
 			#cooling-cells = <0x02>;
 			ect-coeff-index = <0x02>;
 			tz-cooling-name = "LITTLE";
-			freq-table = <392000 400000 576000 672000 768000 864000 960000 1056000 1152000 1248000 1344000 1440000 1536000 1632000 1824000 1920000 2016000 2106000>;
+			freq-table = <691200 979200 1171200 1344000 1824000>;
 			phandle = <0x11e>;
 
 			dm-constraints {
@@ -6582,14 +6582,14 @@
 			cal-id = <0xb040003>;
 			dm-type = <0x01>;
 			dss-type = <0x01>;
-			max-freq = <2672000>;
-			min-freq = <672000>;
+			max-freq = <2515000>;
+			min-freq = <710400>;
 			fast-switch;
 			thread-run-on = "0-5";
 			#cooling-cells = <0x02>;
 			ect-coeff-index = <0x01>;
 			tz-cooling-name = "MID";
-			freq-table = <402000 576000 672000 768000 864000 960000 1056000 1152000 1248000 1344000 1440000 1536000 1632000 1728000 1824000 1920000 2016000 2112000 2208000 2304000 2400000 2515000 2672000>;
+			freq-table = <710400 940800 1171200 1382400 1670400 2054400 2515000>;
 			phandle = <0x119>;
 
 			dm-constraints {
@@ -6602,15 +6602,15 @@
 			cal-id = <0xb040004>;
 			dm-type = <0x02>;
 			dss-type = <0x02>;
-			max-freq = <2967000>;
-			min-freq = <998000>;
+			max-freq = <2803000>;
+			min-freq = <844800>;
 			fast-switch;
 			thread-run-on = "0-5";
-			pm_qos-booting = <2967000>;
+			pm_qos-booting = <2803000>;
 			#cooling-cells = <0x02>;
 			ect-coeff-index = <0x00>;
 			tz-cooling-name = "BIG";
-			freq-table = <576000 672000 768000 864000 960000 1056000 1152000 1248000 1344000 1440000 1536000 1632000 1728000 1824000 1920000 2016000 2112000 2208000 2304000 2400000 2515000 2672000 2707000 2803900 2852000 2967000>;
+			freq-table = <844800 1075200 1401600 1747200 2073600 2553600 2803000>;
 			phandle = <0x118>;
 
 			dm-constraints {
