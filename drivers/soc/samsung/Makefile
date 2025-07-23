@@ -53,9 +53,6 @@ obj-$(CONFIG_EXYNOS_MCINFO)		+= exynos-mcinfo.o
 # CPU Hotplug
 obj-$(CONFIG_EXYNOS_CPUHP)	+= exynos-cpuhp.o
 
-# Exynos CPU Performance
-obj-$(CONFIG_EXYNOS_PERF)       += xperf/
-
 # CPU Power Management
 obj-$(CONFIG_EXYNOS_CPUPM)	+= exynos-cpupm.o
 
