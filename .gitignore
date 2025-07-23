@@ -19425,3 +19425,4 @@ fs/pstore/built-in.a.symversions
 fs/quota/built-in.a.symversions
 *.mod
 /include/ksym
+/out
