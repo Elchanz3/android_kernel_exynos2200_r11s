@@ -19,6 +19,23 @@
 #include <soc/samsung/exynos-sci.h>
 #include "exynos_gpu_interface.h"
 
+struct dvfs_rate_volt custom_gpu_table[] = {
+    { .rate = 303000, .volt = 525000 },
+    { .rate = 404000, .volt = 550000 },
+    { .rate = 500000, .volt = 568750 },
+    { .rate = 605000, .volt = 581250 },
+    { .rate = 711000, .volt = 593750 },
+    { .rate = 807000, .volt = 606250 },
+    { .rate = 903000, .volt = 618750 },
+    { .rate = 999000, .volt = 643750 },
+    { .rate = 1095000, .volt = 687500 },
+    { .rate = 1210000, .volt = 743750 },
+    { .rate = 1306000, .volt = 800000 },
+    { .rate = 1352000, .volt = 800000 },
+};
+
+int custom_gpu_table_size = sizeof(custom_gpu_table) / sizeof(struct dvfs_rate_volt);
+
 #include <linux/pm_qos.h>
 #include <linux/cpufreq.h>
 #include <soc/samsung/exynos_pm_qos.h>
@@ -1152,6 +1169,10 @@ int exynos_interface_init(struct devfreq *df)
 {
 	const char *tmp_str;
 	int ret = 0;
+	struct sgpu_governor_data *data = df->data;
+
+	gpu_dvfs_init_table(custom_gpu_table, ARRAY_SIZE(custom_gpu_table));
+	data->major_state = ARRAY_SIZE(custom_gpu_table);
 
 	if (of_property_read_string(p_adev->pldev->dev.of_node,
 				    "mif_min_lock", &tmp_str)) {
@@ -1308,7 +1329,7 @@ EXPORT_SYMBOL(gpu_dvfs_notify_utilization);
 static int freqs[TABLE_MAX];
 static int voltages[TABLE_MAX];
 
-int gpu_dvfs_init_table(struct dvfs_rate_volt *tb, int max_state)
+int gpu_dvfs_init_table(struct custom_gpu_table *tb, int max_state)
 {
 	int i;
 
@@ -1326,6 +1347,7 @@ int gpu_dvfs_get_step(void)
 {
 	struct devfreq *df = p_adev->devfreq;
 	struct sgpu_governor_data *data = df->data;
+	data->major_state = ARRAY_SIZE(custom_gpu_table);
 	int max_state;
 
 	max_state = (int)data->major_state;
@@ -1353,6 +1375,7 @@ int gpu_dvfs_get_voltage(int clock)
 	int i;
 	struct devfreq *df = p_adev->devfreq;
 	struct sgpu_governor_data *data = df->data;
+	data->major_state = ARRAY_SIZE(custom_gpu_table);
 
 	mutex_lock(&df->lock);
 	for (i = 0; i < data->major_state; i++)
@@ -1371,26 +1394,22 @@ EXPORT_SYMBOL(gpu_dvfs_get_voltage);
 
 /*get_freq_range (for max_freq & min_freq)*/
 static void gpu_dvfs_get_freq_range(struct devfreq *devfreq,
-                                unsigned long *min_freq,
-			        unsigned long *max_freq)
+                                    unsigned long *min_freq,
+                                    unsigned long *max_freq)
 {
-	unsigned long *freq_table = devfreq->profile->freq_table;
 	s32 qos_min_freq, qos_max_freq;
 
 	lockdep_assert_held(&devfreq->lock);
 
-	/* freq_table is sorted by descending order */
-	*min_freq = freq_table[devfreq->profile->max_state - 1];
-	*max_freq = freq_table[0];
+	*min_freq = 303000;
+	*max_freq = 1352000;
 
-	qos_min_freq = dev_pm_qos_read_value(devfreq->dev.parent,
-					     DEV_PM_QOS_MIN_FREQUENCY);
-	qos_max_freq = dev_pm_qos_read_value(devfreq->dev.parent,
-					     DEV_PM_QOS_MAX_FREQUENCY);
+	qos_min_freq = *min_freq;
+	qos_max_freq = *max_freq;
+
 	*min_freq = max(*min_freq, (unsigned long)HZ_PER_KHZ * qos_min_freq);
-	if (qos_max_freq != PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE)
-		*max_freq = min(*max_freq,
-				(unsigned long)HZ_PER_KHZ * qos_max_freq);
+	*max_freq = min(*max_freq,
+				   (unsigned long)HZ_PER_KHZ * qos_max_freq);
 
 	*min_freq = max(*min_freq, devfreq->scaling_min_freq);
 	*max_freq = min(*max_freq, devfreq->scaling_max_freq);
@@ -1613,7 +1632,8 @@ ktime_t gpu_dvfs_update_time_in_state(unsigned long freq)
 		goto time_update;
 
 	sgpu_dvfs_governor_major_current(df, &prev_lev);
-	major_freq = df->profile->freq_table[prev_lev];
+	major_freq = 1352000;
+	data->major_state = ARRAY_SIZE(custom_gpu_table);
 
 	for (lev = 0; lev < data->major_state; lev++) {
 		if (major_freq == freqs[lev]) {
@@ -1815,3 +1835,4 @@ EXPORT_SYMBOL(gpu_dvfs_set_autosuspend_delay);
 
 
 #endif /* CONFIG_DRM_SGPU_EXYNOS */
+

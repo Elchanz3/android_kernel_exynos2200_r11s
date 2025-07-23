@@ -882,8 +882,8 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 #ifdef CONFIG_DRM_SGPU_EXYNOS
 	uint32_t dt_freq;
 	unsigned long max_freq, min_freq;
-	struct dvfs_rate_volt *g3d_rate_volt = NULL;
-	struct dvfs_rate_volt *major_table = NULL;
+	struct custom_gpu_table *g3d_rate_volt = NULL;
+	struct custom_gpu_table *major_table = NULL;
 	int cal_get_dvfs_lv_num;
 	int cal_table_size;
 	unsigned long cal_maxfreq, cal_minfreq;
@@ -952,24 +952,31 @@ int sgpu_governor_init(struct device *dev, struct devfreq_dev_profile *dp,
 	cal_get_dvfs_lv_num = cal_dfs_get_lv_num(adev->cal_id);
 	dp->max_state = cal_get_dvfs_lv_num;
 
-	g3d_rate_volt = kzalloc(sizeof(struct dvfs_rate_volt) * cal_get_dvfs_lv_num,
+	g3d_rate_volt = kzalloc(sizeof(struct custom_gpu_table) * cal_get_dvfs_lv_num,
 				GFP_KERNEL);
 	if (!g3d_rate_volt) {
 		ret = -ENOMEM;
 		goto err_kfree1;
 	}
 
-	major_table = kzalloc(sizeof(struct dvfs_rate_volt) * cal_get_dvfs_lv_num,
+	major_table = kzalloc(sizeof(struct custom_gpu_table) * cal_get_dvfs_lv_num,
 				     GFP_KERNEL);
 	if (!major_table) {
 		ret = -ENOMEM;
 		goto err_kfree1;
 	}
+	
+	
+        for (i = 0; i < custom_gpu_table_size; i++) {
+        g3d_rate_volt[i].rate = custom_gpu_table[i].rate;
+        g3d_rate_volt[i].volt = custom_gpu_table[i].volt;
+        
+        }
 
 	cal_table_size = cal_dfs_get_rate_asv_table(adev->cal_id, g3d_rate_volt);
-	dp->initial_freq = cal_dfs_get_boot_freq(adev->cal_id);
-	cal_maxfreq = cal_dfs_get_max_freq(adev->cal_id);
-	cal_minfreq = cal_dfs_get_min_freq(adev->cal_id);
+	dp->initial_freq = custom_gpu_table[0].rate;
+	cal_maxfreq = custom_gpu_table[custom_gpu_table_size - 1].rate;
+	cal_minfreq = custom_gpu_table[0].rate;
 
 	ret = of_property_read_u32(dev->of_node, "compute_weight",
 				   &data->compute_weight);

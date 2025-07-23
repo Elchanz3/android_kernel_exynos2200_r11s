@@ -1,3 +1,5 @@
+#pragma once
+
 #include <linux/devfreq.h>
 #include <linux/kernel.h>
 
@@ -6,9 +8,19 @@
 #include "soc/samsung/cal-if.h"
 #include "soc/samsung/fvmap.h"
 
-#define TABLE_MAX                      (200)
+#define TABLE_MAX                      (31)
 #define SYSBUSY_FREQ_THRESHOLD         (500000)
 #define SYSBUSY_UTIL_THRESHOLD         (70)
+
+struct custom_gpu_table {
+    unsigned int rate;
+    unsigned int volt;
+};
+
+extern struct dvfs_rate_volt custom_gpu_table[];
+extern int custom_gpu_table_size;
+
+int gpu_dvfs_init_table(struct custom_gpu_table *tb, int max_state);
 
 int exynos_dvfs_preset(struct devfreq *df);
 int exynos_dvfs_postclear(struct devfreq *df);
@@ -18,7 +30,6 @@ int gpu_dvfs_register_utilization_notifier(struct notifier_block *nb);
 int gpu_dvfs_unregister_utilization_notifier(struct notifier_block *nb);
 void gpu_dvfs_notify_utilization(void);
 
-int gpu_dvfs_init_table(struct dvfs_rate_volt *tb, int max_state);
 int gpu_dvfs_get_step(void);
 int *gpu_dvfs_get_freq_table(void);
 
