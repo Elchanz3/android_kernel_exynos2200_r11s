@@ -625,6 +625,7 @@ int amdgpu_atombios_get_clock_info(struct amdgpu_device *adev)
 		/* ??? */
 		if (spll->pll_out_min == 0)
 			spll->pll_out_min = 64800;
+			spll->pll_out_min = 67600;
 
 		spll->pll_in_min =
 		    le16_to_cpu(firmware_info->info.usMinEngineClockPLL_Input);
