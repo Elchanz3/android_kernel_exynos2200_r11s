@@ -115,6 +115,12 @@ static int show_vfsmnt(struct seq_file *m, struct vfsmount *mnt)
 		return 0;
 #endif
 
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+	if (susfs_hide_sus_mnts_for_all_procs && r->mnt_id >= DEFAULT_SUS_MNT_ID) {
+		return 0;
+	}
+#endif
+
 	if (sb->s_op->show_devname) {
 		err = sb->s_op->show_devname(m, mnt_path.dentry);
 		if (err)
@@ -218,6 +224,12 @@ static int show_vfsstat(struct seq_file *m, struct vfsmount *mnt)
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 	if (unlikely((r->mnt.mnt_root->d_inode->i_state & INODE_STATE_SUS_MOUNT) && !susfs_is_current_ksu_domain()))
 		return 0;
+#endif
+
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+	if (susfs_hide_sus_mnts_for_all_procs && r->mnt_id >= DEFAULT_SUS_MNT_ID) {
+		return 0;
+	}
 #endif
 
 	/* device */
